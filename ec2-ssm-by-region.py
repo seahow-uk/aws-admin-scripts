@@ -140,16 +140,18 @@ def main():
         ## create header for the CSV but only if the argument -h True was passed
         print(
             "SSM Status" + "," +
-            "Computer Name" + "," +
-            "Platform Type" + "," +
-            "OS Name" + "," +
-            "IP Address" + "," + 
+            "SSM Computer Name" + "," +
+            "SSM Platform" + "," +
+            "SSM OS Name" + "," + 
             "SSM Agent" + "," + 
             "SSM Ping" + "," + 
-            "Instance Id" + "," +            
-            "Instance Type" + "," + 
-            "Avail Zone" + "," +
-            "Instance Profile"
+            "SSM IP Address" + "," +
+            "EC2 Priv IP" + "," +
+            "EC2 Pub IP" + "," +
+            "EC2 Instance Id" + "," +            
+            "EC2 Instance Type" + "," + 
+            "EC2 Avail Zone" + "," +
+            "EC2 Instance Profile"
         )
 
     ## loop over the list retrieved from ec2
@@ -159,6 +161,8 @@ def main():
         ec2_type = str(instance.instance_type)
         ec2_az = str(instance.placement["AvailabilityZone"])
         ec2_iam = str(instance.iam_instance_profile["Arn"].split("/")[1])
+        ec2_ip = str(instance.private_ip_address)
+        ec2_pub = str(instance.public_ip_address)
         
         ## first set a marker so we can tell if there is an ec2 instance with no corresponding ssm record at all.  We will count this as broken too.
         no_ssm_hits = True
@@ -206,9 +210,11 @@ def main():
                         ssm_computername + "," +
                         ssm_platformtype + "," +
                         ssm_platformname + "," +
-                        ssm_ipaddress + "," + 
                         ssm_agentversion + "," + 
                         ssm_pingstatus + "," + 
+                        ssm_ipaddress + "," + 
+                        ec2_ip + "," +
+                        ec2_pub + "," +
                         ec2_id + "," +            
                         ec2_type + "," + 
                         ec2_az + "," + 
@@ -225,6 +231,8 @@ def main():
                 "" + "," + 
                 "" + "," + 
                 "" + "," + 
+                ec2_ip + "," +
+                ec2_pub + "," +
                 ec2_id + "," +            
                 ec2_type + "," + 
                 ec2_az + "," + 
