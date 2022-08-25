@@ -139,16 +139,16 @@ def main():
     if fieldnames == "True":
         ## create header for the CSV but only if the argument -h True was passed
         print(
-            "Computer Name" + "," +
             "SSM Status" + "," +
+            "Computer Name" + "," +
             "Platform Type" + "," +
             "OS Name" + "," +
-            "Instance Id" + "," +            
-            "Instance Type" + "," + 
-            "Avail Zone" + "," + 
             "IP Address" + "," + 
             "SSM Agent" + "," + 
             "SSM Ping" + "," + 
+            "Instance Id" + "," +            
+            "Instance Type" + "," + 
+            "Avail Zone" + "," +
             "Instance Profile"
         )
 
@@ -160,6 +160,9 @@ def main():
         ec2_az = str(instance.placement["AvailabilityZone"])
         ec2_iam = str(instance.iam_instance_profile["Arn"].split("/")[1])
         
+        ## first set a marker so we can tell if there is an ec2 instance with no corresponding ssm record at all.  We will count this as broken too.
+        no_ssm_hits = True
+
         ## loop over the list retrieved from ssm
         for ssm_details in ssm_instances:   
             
@@ -167,6 +170,9 @@ def main():
             ## is this idiomatic python?  no, but it keeps us from querying the AWS API more than once (cost savings / rate limit avoidance)
 
             if (ssm_details["InstanceId"]) == instance.id:
+                
+                # we found a corresponding record, so don't worry about this anymore
+                no_ssm_hits = False
 
                 ssm_computername = str(ssm_details['ComputerName'])
                 ssm_platformtype = str(ssm_details['PlatformType'])
@@ -174,7 +180,7 @@ def main():
                 ssm_ipaddress = str(ssm_details['IPAddress'])
                 ssm_agentversion = str(ssm_details['AgentVersion'])
                 ssm_pingstatus = str(ssm_details['PingStatus'])
-                ssm_broken = "Working"
+                ssm_broken = "SSM WORKING"
 
                 if (broken == "False"):
                     ## This means they want to see all records, no further thinking required 
@@ -186,7 +192,7 @@ def main():
                     ## The following will detect brokenness
                     if (ssm_pingstatus == "Inactive" or ssm_pingstatus == "Lost Connection"):
                         ssm_showme = True
-                        ssm_broken = "Broken"
+                        ssm_broken = "SSM BROKEN"
                     else:
                         ssm_showme = False
                 else:
@@ -196,20 +202,34 @@ def main():
 
                 if ssm_showme == True:
                     print(
-                        ssm_computername + "," +
                         ssm_broken + "," +
+                        ssm_computername + "," +
                         ssm_platformtype + "," +
                         ssm_platformname + "," +
-                        ec2_id + "," +            
-                        ec2_type + "," + 
-                        ec2_az + "," + 
                         ssm_ipaddress + "," + 
                         ssm_agentversion + "," + 
                         ssm_pingstatus + "," + 
+                        ec2_id + "," +            
+                        ec2_type + "," + 
+                        ec2_az + "," + 
                         ec2_iam
                     )
-                
-
+        
+        ## this is only if there are no corresponding ssm records
+        if no_ssm_hits == True:
+            print(
+                "SSM BROKEN" + "," +
+                "" + "," +
+                "" + "," +
+                "" + "," +
+                "" + "," + 
+                "" + "," + 
+                "" + "," + 
+                ec2_id + "," +            
+                ec2_type + "," + 
+                ec2_az + "," + 
+                ec2_iam
+            )
 
 if __name__ == "__main__":
     exit(main())                        
