@@ -2,6 +2,8 @@
 
 Misc infrastructure management utilities
 
+Authored **independently** by myself, not officially by Amazon Web Services.  Meant to serve as examples/starting points for further customization.  No warranty express or implied.  
+
 ec2-ssm-by-region.py
 --------------------
 meant to help track down and diagnose EC2 instances that are not properly reporting in to SSM.
