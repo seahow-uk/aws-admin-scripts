@@ -137,7 +137,7 @@ def main():
     ssm_instances=ssm_data["InstanceInformationList"]
 
     if fieldnames == "True":
-        ## create header for the CSV but only if the argument -h True was passed
+        ## create header for the CSV but only if the argument -f True was passed
         print(
             "SSM Status" + "," +
             "SSM Computer Name" + "," +
