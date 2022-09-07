@@ -25,7 +25,7 @@ rds-maintenance-windows.py
 --------------------
 meant to figure out what the maintenance windows are set to across deployed rds instances in both UTC and local time
 
-![image](https://user-images.githubusercontent.com/112027478/188873575-7bdf6390-d378-4d16-8af6-b0009353719e.png)
+![image](https://user-images.githubusercontent.com/112027478/188876917-8c506f5a-a271-4dd0-928e-fe5c96e2d758.png)
 
 **To produce the above example (multiple regions rolled into one CSV):**
 
