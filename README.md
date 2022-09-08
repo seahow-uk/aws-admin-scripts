@@ -2,7 +2,7 @@
 
 Misc infrastructure management utilities
 
-Authored **independently** by myself, not officially by Amazon Web Services.  Meant to serve as examples/starting points for further customization.  No warranty express or implied.  
+Authored **independently** by myself, not officially by any employer of mine, past or present.  Meant to serve as examples/starting points for further customization.  No warranty express or implied.  
 
 ec2-ssm-by-region.py
 --------------------
