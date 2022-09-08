@@ -1,6 +1,6 @@
 # aws-admin-scripts
 
-Misc infrastructure management utilities
+Misc infrastructure management utilities for use with the AWS platform
 
 Authored **independently** by myself, not officially by any employer of mine, past or present.  Meant to serve as examples/starting points for further customization.  No warranty express or implied.  
 
