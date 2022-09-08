@@ -1,4 +1,4 @@
-# admin-scripts
+# aws-admin-scripts
 
 Misc infrastructure management utilities
 
