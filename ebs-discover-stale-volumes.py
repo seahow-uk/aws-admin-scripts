@@ -40,9 +40,12 @@ example (multiple regions into one CSV):
 """
 
 import boto3
-import argparse
+import argparse, time, os, json
 from datetime import datetime
 from datetime import timedelta
+
+STS_CLIENT = boto3.client('sts')
+CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
 
 def setup_args():
     parser = argparse.ArgumentParser(
@@ -87,6 +90,13 @@ def main():
     ## retrieve all ebs volume info in the target region
     vol_data = ec2.volumes.all()
 
+    ## retrieve all snapshots owned by this account in this region, excluding the many public ones
+    snap_data = ec2.snapshots.filter(
+        OwnerIds=[
+            CURRENT_ACCOUNT_ID
+        ]
+    )
+    
     ## set up how we want our dates formatted
     date_format_str = '%B %Y'
 
@@ -100,26 +110,19 @@ def main():
             "Encrypted" + "," +
             "GB Size" + "," +
             "Created" + "," +            
-            "Last Attached" + "," + 
-            "Archival Snap?" + "," +
-            "Archived?"
+            "Snaps in Archive" + "," +
+            "Most Recent Snap in Archive"
         )
 
     ## loop over the list retrieved from ec2
     for volume in vol_data:
 
-        vol_archived = "False"
-        vol_snapped = "False"
         vol_name = "unnamed"
 
         if volume.tags:
             for t in volume.tags:
                 if t["Key"] == 'Name':
-                    vol_name = t["Value"]
-                if t["Key"] == 'Snapped':
-                    vol_snapped = t["Value"]
-                if t["Key"] == 'Archived':
-                    vol_archived = t["Value"]         
+                    vol_name = t["Value"]  
 
         vol_id = str(volume.id)
         vol_type = str(volume.volume_type)
@@ -128,6 +131,21 @@ def main():
         vol_state = str(volume.state)
         vol_encrypted = str(volume.encrypted)
         vol_created = str(volume.create_time.strftime(date_format_str))
+        
+
+        snaps_in_volume=0
+        snaps_in_volume_list=[]
+        for snap in snap_data:
+            if snap.volume_id == vol_id and snap.storage_tier == 'archive':
+                snaps_in_volume=snaps_in_volume+1
+                snaps_in_volume_list.append(snap.start_time)
+
+        most_recent_snap_date = 'none'
+
+        if snaps_in_volume > 0:
+            most_recent_snap_date = max(snaps_in_volume_list).strftime(date_format_str)
+
+        vol_archived = most_recent_snap_date
 
         if (vol_state) == "available":
 
@@ -139,11 +157,16 @@ def main():
                 vol_encrypted + "," +
                 vol_size + "," + 
                 vol_created + "," + 
-                "---" + "," +
-                vol_snapped + "," +
+                str(snaps_in_volume) + "," +
                 vol_archived
             )
 
+def date_compare(snap1, snap2):
+    if snap1.start_time < snap2.start_time:
+        return 1
+    elif snap1.start_time == snap2.start_time:
+        return 0
+    return -1
 
 if __name__ == "__main__":
     exit(main())                        
