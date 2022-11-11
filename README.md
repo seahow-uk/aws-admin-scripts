@@ -41,7 +41,7 @@ ebs-discover-stale-volumes.py
 --------------------
 lists all ebs volumes in a given region that are unattached.  denotes which of those volumes have snapshot(s) in the Archive tier, and if they do the date of the most recent example of such.
 
-![image](https://user-images.githubusercontent.com/112027478/188876917-8c506f5a-a271-4dd0-928e-fe5c96e2d758.png)
+![ebs-snaps](https://user-images.githubusercontent.com/112027478/201394313-691ff847-9636-4598-bd5e-97ba5c0d0a16.png)
 
 **To produce the above example (multiple regions rolled into one CSV):**
 
