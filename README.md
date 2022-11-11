@@ -36,3 +36,20 @@ figure out what the maintenance windows are set to across deployed rds instances
         - The example above puts the data for several European regions into one CSV
         - Notice the first one has the "-f True" parameter set, which adds the column headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
+
+ebs-discover-stale-volumes.py
+--------------------
+lists all ebs volumes in a given region that are unattached.  denotes which of those volumes have snapshot(s) in the Archive tier, and if they do the date of the most recent example of such.
+
+![image](https://user-images.githubusercontent.com/112027478/188876917-8c506f5a-a271-4dd0-928e-fe5c96e2d758.png)
+
+**To produce the above example (multiple regions rolled into one CSV):**
+
+    python ebs-discover-stale-volumes.py -r eu-west-1 -f True > mycsv.csv
+    python ebs-discover-stale-volumes.py -r eu-west-2 >> mycsv.csv
+    python ebs-discover-stale-volumes.py -r eu-west-3 >> mycsv.csv
+    python ebs-discover-stale-volumes.py -r eu-north-1 >> mycsv.csv
+
+        - The example above puts the data for several European regions into one CSV
+        - Notice the first one has the "-f True" parameter set, which adds the column headers
+        - It also uses a single > whereas the subsequent ones use >> to redirect output to the file

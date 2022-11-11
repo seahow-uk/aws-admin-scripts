@@ -2,7 +2,7 @@
 
 """
 sean@tanagra.uk
-Aug 2022
+Nov 2022
 
 arguments:
 
@@ -11,9 +11,6 @@ arguments:
 
     -f or --fieldnames [True/False]
         Whether or not to print a header for the CSV (default is False)
-    
-    -b or --broken [True/False]
-        ONLY return instances where SSM isn't able to see the agent at present
 
 prerequisites:
 
@@ -60,11 +57,6 @@ def setup_args():
                         required=False,
                         action='store',
                         help='Whether to include a CSV header')
-
-    parser.add_argument('-b', '--broken',
-                        required=False,
-                        action='store',
-                        help='ONLY show broken SSM agents')
 
     return (parser.parse_args())
 
