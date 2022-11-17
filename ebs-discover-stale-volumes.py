@@ -80,15 +80,37 @@ def main():
     ec2 = boto3.resource('ec2',region_name=region)
 
     ## retrieve all ebs volume info in the target region
-    vol_data = ec2.volumes.all()
+    vol_data = ec2.volumes.filter(
+        Filters=[
+            {
+                'Name': 'status',
+                'Values': [
+                    'available',
+                ]           
+            }
+        ]
+    )
 
     ## retrieve all snapshots owned by this account in this region, excluding the many public ones
     snap_data = ec2.snapshots.filter(
-        OwnerIds=[
-            CURRENT_ACCOUNT_ID
+        Filters=[
+            {
+                'Name': 'status',
+                'Values': [
+                    'completed',
+                ],
+                'Name': 'owner-id',
+                'Values': [
+                    CURRENT_ACCOUNT_ID,
+                ],
+                'Name': 'storage-tier',
+                'Values': [
+                    'archive',
+                ]
+            }
         ]
     )
-    
+
     ## set up how we want our dates formatted
     date_format_str = '%B %Y'
 
@@ -124,11 +146,10 @@ def main():
         vol_encrypted = str(volume.encrypted)
         vol_created = str(volume.create_time.strftime(date_format_str))
         
-
         snaps_in_volume=0
         snaps_in_volume_list=[]
         for snap in snap_data:
-            if snap.volume_id == vol_id and snap.storage_tier == 'archive':
+            if snap.volume_id == vol_id:
                 snaps_in_volume=snaps_in_volume+1
                 snaps_in_volume_list.append(snap.start_time)
 
