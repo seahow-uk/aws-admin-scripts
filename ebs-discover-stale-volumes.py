@@ -174,13 +174,6 @@ def main():
                 vol_archived
             )
 
-def date_compare(snap1, snap2):
-    if snap1.start_time < snap2.start_time:
-        return 1
-    elif snap1.start_time == snap2.start_time:
-        return 0
-    return -1
-
 if __name__ == "__main__":
     exit(main())                        
                     
