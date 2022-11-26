@@ -49,7 +49,7 @@ amazon-linux-extras install mate-desktop1.x python3.8 firefox epel -y
 yum install tigervnc-server tigervnc-server-module expect -y
 
 # create and execute an expect script so we don't have to interact with the password thing
-echo "#!/usr/bin/expect -f" >>runvncpasswd.sh
+echo "#!/usr/bin/expect -f" >runvncpasswd.sh
 echo "set timeout -1" >>runvncpasswd.sh
 echo "spawn vncpasswd" >>runvncpasswd.sh
 echo "expect \"Password:\"" >>runvncpasswd.sh
