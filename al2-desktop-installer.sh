@@ -49,21 +49,21 @@ amazon-linux-extras install mate-desktop1.x python3.8 firefox epel -y
 yum install tigervnc-server tigervnc-server-module expect -y
 
 # create and execute an expect script so we don't have to interact with the password thing
-echo "#!/usr/bin/expect -f" >runvncpasswd.sh
-echo "set timeout -1" >>runvncpasswd.sh
-echo "spawn vncpasswd" >>runvncpasswd.sh
-echo "expect \"Password:\"" >>runvncpasswd.sh
-echo "send -- \"$p\r\"" >>runvncpasswd.sh
-echo "expect \"Verify:\"" >>runvncpasswd.sh
-echo "send -- \"$p\r\"" >>runvncpasswd.sh
-echo "expect \"Would you like to enter a view-only password (y/n)?\"" >>runvncpasswd.sh
-echo "send -- \"n\r\"" >>runvncpasswd.sh
-echo "expect eof" >>runvncpasswd.sh
-chmod 700 runvncpasswd.sh
-./runvncpasswd
+echo "#!/usr/bin/expect -f" >./runvncpasswd.sh
+echo "set timeout -1" >>./runvncpasswd.sh
+echo "spawn vncpasswd" >>./runvncpasswd.sh
+echo "expect \"Password:\"" >>./runvncpasswd.sh
+echo "send -- \"$p\r\"" >>./runvncpasswd.sh
+echo "expect \"Verify:\"" >>./runvncpasswd.sh
+echo "send -- \"$p\r\"" >>./runvncpasswd.sh
+echo "expect \"Would you like to enter a view-only password (y/n)?\"" >>./runvncpasswd.sh
+echo "send -- \"n\r\"" >>./runvncpasswd.sh
+echo "expect eof" >>./runvncpasswd.sh
+chmod 700 ./runvncpasswd.sh
+./runvncpasswd.sh
 
 # delete the expect script as we don't want someone coming along and finding the clear text
-rm ./runvncpasswd
+rm ./runvncpasswd.sh
 
 # set the configuration files
 mkdir /etc/tigervnc
