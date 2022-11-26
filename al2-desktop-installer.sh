@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# script that will set up a MATE desktop on an Amazon Linux 2 instance
-# It will also install all of the desktop utilities for MATE
+# sean@tanagra.uk
+# Nov 2022
+#
+# This is a script which will set up a MATE desktop on an Amazon Linux 2 instance
+# It will also install all of the desktop utilities for MATE and tigervnc-server
 #
 # OPTIONS:
 #
