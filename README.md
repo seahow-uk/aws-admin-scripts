@@ -58,7 +58,7 @@ al2-desktop-installer.sh
 --------------------
 installs and configures MATE + VNC (plus all desktop utilities) for an EC2 instance running Amazon Linux 2 (only)
 
-
+![image](https://user-images.githubusercontent.com/112027478/204065554-7a3b5585-87b0-4562-8c7a-c28dd8ca0ab0.png)
 
 **Optional parameters:**
 
