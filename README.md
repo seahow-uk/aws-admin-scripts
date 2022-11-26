@@ -53,3 +53,20 @@ lists all ebs volumes in a given region that are unattached.  denotes which of t
         - The example above puts the data for several European regions into one CSV
         - Notice the first one has the "-f True" parameter set, which adds the column headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
+
+al2-desktop-installer.sh
+--------------------
+installs and configures MATE + VNC (plus all desktop utilities) for an EC2 instance running Amazon Linux 2 (only)
+
+
+
+**Optional parameters:**
+
+    --p <password> 
+        VNC password will be set to today's date (in this format: yyyymmdd) unless you specify your own with --p
+
+    --r <runasuser>
+        VNC will run as root unless you tell it a different user to run as 
+
+    example:
+        ./al2-desktop.sh --p 0neD1rect10nRulez2001 --r ec2-user

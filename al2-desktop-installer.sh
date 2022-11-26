@@ -3,9 +3,6 @@
 # script that will set up a MATE desktop on an Amazon Linux 2 instance
 # It will also install all of the desktop utilities for MATE
 #
-# WARNING: Passing credentials through an expect script like this
-# is very insecure and meant for test labs only
-#
 # OPTIONS:
 #
 # (neither of these is required)
@@ -56,7 +53,7 @@ echo "expect eof" >>runvncpasswd.sh
 chmod 700 runvncpasswd.sh
 ./runvncpasswd
 
-# delete the insecure thing we just did
+# delete the expect script as we don't want someone coming along and finding the clear text
 rm ./runvncpasswd
 
 # set the configuration files
