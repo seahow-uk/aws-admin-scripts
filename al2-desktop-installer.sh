@@ -8,10 +8,13 @@
 # (neither of these is required)
 #
 # --p <password> 
-#       VNC password will be set to Aws2022 unless you specify your own with --p
+#       VNC password will be set to AWS@<todays date> (format: yyyymmdd) unless you do this
+#       for instance, were I to not supply a password and run the script right now it would
+#       set the VNC login password to "AWS@20221126".  It should go without saying that this
+#       is a bad idea and meant for test labs only.
 #
 # --r <runasuser>
-#       VNC will run as root unless you tell it a different user to run as 
+#       VNC will run as root unless you tell it a different user to run as with this
 #
 # example:
 #       ./al2-desktop.sh --p 0neD1rect10nRulez2001! --r ec2-user
@@ -21,8 +24,11 @@
 
 # Set your defaults here
 
+TODAYSDATE=$(date +'%Y%m%d')
+NOPASS="AWS@$TODAYSDATE"
+
 r=${r:-root}
-p=${p:-Aws2022}
+p=${p:-$NOPASS}
 
 while [ $# -gt 0 ]; do
      if [[ $1 == *"--"* ]]; then
