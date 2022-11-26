@@ -63,7 +63,9 @@ installs and configures MATE + VNC (plus all desktop utilities) for an EC2 insta
 **Optional parameters:**
 
     --p <password> 
-        VNC password will be set to today's date (in this format: yyyymmdd) unless you specify your own with --p
+        VNC password will be set to AWS@todaysdate (in this format: AWS@yyyymmdd) unless you specify your own
+        for instance, were I to not supply a password and run the script on Nov 26, 2022 it would
+        set the VNC login password to "AWS@20221126".  This is obviously insecure and meant for labs only
 
     --r <runasuser>
         VNC will run as root unless you tell it a different user to run as 
