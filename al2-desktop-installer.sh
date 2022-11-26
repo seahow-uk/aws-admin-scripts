@@ -53,9 +53,9 @@ echo "#!/usr/bin/expect -f" >>runvncpasswd.sh
 echo "set timeout -1" >>runvncpasswd.sh
 echo "spawn vncpasswd" >>runvncpasswd.sh
 echo "expect \"Password:\"" >>runvncpasswd.sh
-echo "send -- \"$VNCPASS\r\"" >>runvncpasswd.sh
+echo "send -- \"$p\r\"" >>runvncpasswd.sh
 echo "expect \"Verify:\"" >>runvncpasswd.sh
-echo "send -- \"$VNCPASS\r\"" >>runvncpasswd.sh
+echo "send -- \"$p\r\"" >>runvncpasswd.sh
 echo "expect \"Would you like to enter a view-only password (y/n)?\"" >>runvncpasswd.sh
 echo "send -- \"n\r\"" >>runvncpasswd.sh
 echo "expect eof" >>runvncpasswd.sh
@@ -67,13 +67,13 @@ rm ./runvncpasswd
 
 # set the configuration files
 mkdir /etc/tigervnc
-echo ":1=root" >>/etc/tigervnc/vncserver.users
+echo ":1=$r" >>/etc/tigervnc/vncserver.users
 echo "securitytypes=vncauth,tlsvnc" >>/etc/tigervnc/vncserver-config-mandatory
 echo "desktop=sandbox" >>/etc/tigervnc/vncserver-config-mandatory
 echo "geometry=1920x1200" >>/etc/tigervnc/vncserver-config-mandatory
-bash -c 'echo PREFERRED=/usr/bin/mate-session > /etc/sysconfig/desktop'
+echo "PREFERRED=/usr/bin/mate-session" > /etc/sysconfig/desktop
 cp /lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@.service
-sed -i 's/<USER>/root/' /etc/systemd/system/vncserver@.service
+sed -i "s/<USER>/$r/" /etc/systemd/system/vncserver@.service
 systemctl daemon-reload
 systemctl enable vncserver@:1.service
 systemctl start vncserver@:1.service
