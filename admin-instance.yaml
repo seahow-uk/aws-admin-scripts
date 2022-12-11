@@ -360,14 +360,6 @@ Resources:
                   initial_position = start_of_file
                   time_zone = LOCAL
                   datetime_format = %Y-%m-%d %H:%M:%S
-
-                  [/var/log/amazon/ssm/errors.log]
-                  file = /var/log/amazon/ssm/errors.log
-                  log_group_name = ${InstanceLogs}
-                  log_stream_name = /{hostname}/var/log/amazon/ssm/errors.log
-                  initial_position = start_of_file
-                  time_zone = LOCAL
-                  datetime_format = %Y-%m-%d %H:%M:%S
               mode: "000444"
               owner: root
               group: root
