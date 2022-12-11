@@ -35,11 +35,11 @@ Metadata:
       TimeZone:
         default: Timezone to set within the instance
       InstanceProfile:
-        default: Name of IAM instance profile
+        default: You must type EXACTLY the name of the IAM Role.  One character off and the deployment will hang.
       PVSize:
-        default: Size of the data drive (will be mounted to /data)
+        default: Size of the secondary data drive (will be mounted to /data)
       PVType:
-        default: EBS Volume type for the data drive
+        default: EBS Volume type for the secondary data drive
 Parameters:
   Subnet:
     Type: AWS::EC2::Subnet::Id
@@ -49,17 +49,20 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
   InstanceType:
-    Description: "Select from the drop-down [Note: Prices are rounded and represent linux instances]"
+    Description: "Select from the drop-down [Note: Prices are rounded and represent linux, on-demand, in us-east-1]"
     Type: String
-    Default: "t3a.micro   | $7/mo   | 2 VCPU  | AMD EPYC 7571 2.2 |  1.0 GiB RAM"
+    Default: "t4g.nano    | $3/mo   | 2 VCPU  | AWS Graviton2 2.5 |  0.5 GiB RAM"
     AllowedValues:
+    - "t4g.nano    | $3/mo   | 2 VCPU  | AWS Graviton2 2.5 |  0.5 GiB RAM"
+    - "t4g.micro   | $6/mo   | 2 VCPU  | AWS Graviton2 2.5 |  1.0 GiB RAM"
+    - "t4g.small   | $12/mo  | 2 VCPU  | AWS Graviton2 2.5 |  2.0 GiB RAM"
+    - "t4g.medium  | $24.5/mo| 2 VCPU  | AWS Graviton2 2.5 |  4.0 GiB RAM"    
+    - "t4g.large   | $49/mo  | 2 VCPU  | AWS Graviton2 2.5 |  8.0 GiB RAM"
     - "t3a.nano    | $3.5/mo | 2 VCPU  | AMD EPYC 7571 2.2 |  0.5 GiB RAM"
     - "t3a.micro   | $7/mo   | 2 VCPU  | AMD EPYC 7571 2.2 |  1.0 GiB RAM"
     - "t3a.small   | $14/mo  | 2 VCPU  | AMD EPYC 7571 2.2 |  2.0 GiB RAM"
     - "t3a.medium  | $28/mo  | 2 VCPU  | AMD EPYC 7571 2.2 |  4.0 GiB RAM"    
     - "t3a.large   | $55/mo  | 2 VCPU  | AMD EPYC 7571 2.2 |  8.0 GiB RAM"        
-    - "t3a.xlarge  | $110/mo | 4 VCPU  | AMD EPYC 7571 2.2 | 16.0 GiB RAM"
-    - "t3a.2xlarge | $220/mo | 8 VCPU  | AMD EPYC 7571 2.2 | 32.0 GiB RAM"
   LinuxAMI:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-ebs
@@ -69,6 +72,9 @@ Parameters:
     Type: String
     Default: "America/St_Johns"
     AllowedValues:
+    - "Europe/Bucharest"
+    - "Europe/Madrid"
+    - "Europe/London"
     - "America/St_Johns"
     - "EST5EDT"
     - "CST6CDT"
