@@ -75,9 +75,11 @@ installs and configures MATE + VNC (plus all desktop utilities) for an EC2 insta
 
 admin-instance.yaml
 --------------------
-CloudFormation template that will spin up an Amazon Linux 2 instance with SSM and CloudWatch agents + everything needed to run these scripts.  It also creates a log group in CloudWatch and streams important logs to it.
+CloudFormation template that will spin up an Amazon Linux 2 instance with SSM and CloudWatch agents + everything needed to run these scripts.  It also creates a log group in CloudWatch and streams important logs to it.  Further, the al2-desktop-installer.sh script mentioned above will be run as part of the setup.  Refer to that section for details.
 
 NOTE: This repo gets cloned to /opt/aws/aws-admin-scripts .  As root, you should be able to cd to that directory and start executing scripts.
+
+
 
 ![image](https://user-images.githubusercontent.com/112027478/206909795-ffd9e330-9d51-4692-b30e-25559229ff63.png)
 
