@@ -81,30 +81,30 @@ CloudFormation template that will spin up an Amazon Linux 2 instance with SSM an
 
 **Required parameters:**
 
-    KeyPair - Select an EC2 KeyPair in that region
+    **KeyPair** - Select an EC2 KeyPair in that region
 
-    Subnet - Select a Subnet in the VPC you would like to deploy this instance to
+    **Subnet** - Select a Subnet in the VPC you would like to deploy this instance to
 
-    SecurityGroup - Select a Security Group you would like to attach to this instance
+    **SecurityGroup** - Select a Security Group you would like to attach to this instance
 
-    InstanceProfile - An IAM Role that has permissions to send messages to EC2, post CloudWatch Metrics, and communicate with SSM
+    **InstanceProfile** - An IAM Role that has permissions to send messages to EC2, post CloudWatch Metrics, and communicate with SSM
 
-        Note: Also included in this repo is a file called admin-instance-role-policy.json.  
-	This is an example policy which can be used to create an IAM Role with appropriate permissions.
+    **Note**: Also included in this repo is a file called admin-instance-role-policy.json.  
+    This is an example policy which can be used to create an IAM Role with appropriate permissions.
 
 **Optional parameters:**
 
-    InstanceType - Select one of the instance types from the dropdown.  
+    **InstanceType** - Select one of the instance types from the dropdown.  
     Default is t3a.micro.
 
-    LinuxAMI - You should leave this at the default unless you know what you're doing. 
+    **LinuxAMI** - You should leave this at the default unless you know what you're doing. 
     This is pulling the latest AMI ID from a public SSM parameter.
 
-    PVSize - This instance will get a secondary EBS volume mounted on /data this size.  
+    **PVSize** - This instance will get a secondary EBS volume mounted on /data this size.  
     Default is 36.
 
-    PVType - The aforementioned EBS volume will be of the type you select here.  
+    **PVType** - The aforementioned EBS volume will be of the type you select here.  
     Default is GP3.
 
-    TimeZone - Select one of the TimeZones here.  
+    **TimeZone** - Select one of the TimeZones here.  
     Note: I need to expand this list.
