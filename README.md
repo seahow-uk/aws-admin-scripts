@@ -77,7 +77,7 @@ admin-instance.yaml
 --------------------
 CloudFormation template that will spin up an Amazon Linux 2 instance with SSM and CloudWatch agents + everything needed to run these scripts.  It also creates a log group in CloudWatch and streams important logs to it.
 
-![image](https://user-images.githubusercontent.com/112027478/204065554-7a3b5585-87b0-4562-8c7a-c28dd8ca0ab0.png)
+![image](https://user-images.githubusercontent.com/112027478/206909495-ac13c0ee-cd6b-4801-8ec1-1975e81171c1.png)
 
 **Required parameters:**
 
