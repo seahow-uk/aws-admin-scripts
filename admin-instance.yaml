@@ -132,7 +132,6 @@ Resources:
             - 02_config-amazon-cloudwatch-agent
             - 03_restart_amazon-cloudwatch-agent
             - 04_utility_box_tweaks
-            - 05_configure
           UpdateEnvironment:
             - 02_config-amazon-cloudwatch-agent
             - 03_restart_amazon-cloudwatch-agent
@@ -466,7 +465,8 @@ Resources:
             03_enablelogs:
               command: systemctl enable awslogsd 
             04_restartlogs:
-              command: systemctl restart awslogsd     
+              command: systemctl restart awslogsd
+            05_
     Properties:
       Tags:
       - Key: Name
