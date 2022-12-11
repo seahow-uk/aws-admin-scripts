@@ -184,7 +184,7 @@ Resources:
               command: !Sub if [ "${TimeZone}" != "UDT" ]; then ln -s -f /usr/share/zoneinfo/${TimeZone} /etc/localtime; fi
               ignoreErrors: "True"
             02_SetTimeZoneSysconfig:
-              command: !Sub if [ "${TimeZone}" != "UDT" ]; then sed -ibak -e 's/"UTC"/"${TimeZone}"/g' -e 's/true/false/g' /etc/sysconfig/clock; fi
+              command: !Sub if [ "${TimeZone}" != "UDT" ]; then sed -ibak 's/"UTC"/"${TimeZone}"/g' -e 's/true/false/g' /etc/sysconfig/clock; fi
               ignoreErrors: "True"
             03_SetHostNameCtl:
               command: 
