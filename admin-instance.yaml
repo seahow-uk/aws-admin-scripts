@@ -79,12 +79,13 @@ Parameters:
   TimeZone:
     Description: Time Zone for instance
     Type: String
-    Default: "America/St_Johns"
+    Default: "NDT"
     AllowedValues:
-    - "Europe/Bucharest"
-    - "Europe/Madrid"
-    - "Europe/London"
-    - "America/St_Johns"
+    - "NST
+    - "NDT"
+    - "GB"
+    - "CET"
+    - "EET"
     - "EST5EDT"
     - "CST6CDT"
     - "MST7MDT"
@@ -184,7 +185,7 @@ Resources:
               command: !Sub if [ "${TimeZone}" != "UDT" ]; then ln -s -f /usr/share/zoneinfo/${TimeZone} /etc/localtime; fi
               ignoreErrors: "True"
             02_SetTimeZoneSysconfig:
-              command: !Sub if [ "${TimeZone}" != "UDT" ]; then sed -ibak 's/"UTC"/"${TimeZone}"/g' -e 's/true/false/g' /etc/sysconfig/clock; fi
+              command: !Sub if [ "${TimeZone}" != "UDT" ]; then sed -ibak -e 's/"UTC"/"${TimeZone}"/g' -e 's/true/false/g' /etc/sysconfig/clock; fi
               ignoreErrors: "True"
             03_SetHostNameCtl:
               command: 
