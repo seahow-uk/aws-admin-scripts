@@ -72,3 +72,33 @@ installs and configures MATE + VNC (plus all desktop utilities) for an EC2 insta
 
     example:
         ./al2-desktop.sh --p 0neD1rect10nRulez2001 --r ec2-user
+
+admin-instance.yaml
+--------------------
+CloudFormation template that will spin up an Amazon Linux 2 instance with SSM and CloudWatch agents + everything needed to run these scripts.  It also creates a log group in CloudWatch and streams important logs to it.
+
+![image](https://user-images.githubusercontent.com/112027478/204065554-7a3b5585-87b0-4562-8c7a-c28dd8ca0ab0.png)
+
+**Required parameters:**
+
+    KeyPair - Select an EC2 KeyPair in that region
+
+    Subnet - Select a Subnet in the VPC you would like to deploy this instance to
+
+    SecurityGroup - Select a Security Group you would like to attach to this instance
+
+    InstanceProfile - An IAM Role that has permissions to send messages to EC2, post CloudWatch Metrics, and communicate with SSM
+
+        Note: Also included in this repo is a file called admin-instance-role-policy.json.  This is an example policy which can be used to create an IAM Role with appropriate permissions.
+
+**Optional parameters:**
+
+    InstanceType - Select one of the instance types from the dropdown.  Default is t3a.micro.
+
+    LinuxAMI - You should leave this at the default unless you know what you're doing.  This is pulling the latest AMI ID from a public SSM parameter.
+
+    PVSize - This instance will get a secondary EBS volume mounted on /data that is of the number of GB you specify here.  Default is 36.
+
+    PVType - The aforementioned EBS volume will be of the type you select here.  Default is GP3.
+
+    TimeZone - Select one of the TimeZones here.  Note: I need to expand this list.
