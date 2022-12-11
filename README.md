@@ -93,12 +93,17 @@ CloudFormation template that will spin up an Amazon Linux 2 instance with SSM an
 
 **Optional parameters:**
 
-    InstanceType - Select one of the instance types from the dropdown.  Default is t3a.micro.
+    InstanceType - Select one of the instance types from the dropdown.  
+    Default is t3a.micro.
 
-    LinuxAMI - You should leave this at the default unless you know what you're doing.  This is pulling the latest AMI ID from a public SSM parameter.
+    LinuxAMI - You should leave this at the default unless you know what you're doing. 
+    This is pulling the latest AMI ID from a public SSM parameter.
 
-    PVSize - This instance will get a secondary EBS volume mounted on /data that is of the number of GB you specify here.  Default is 36.
+    PVSize - This instance will get a secondary EBS volume mounted on /data this size.  
+    Default is 36.
 
-    PVType - The aforementioned EBS volume will be of the type you select here.  Default is GP3.
+    PVType - The aforementioned EBS volume will be of the type you select here.  
+    Default is GP3.
 
-    TimeZone - Select one of the TimeZones here.  Note: I need to expand this list.
+    TimeZone - Select one of the TimeZones here.  
+    Note: I need to expand this list.
