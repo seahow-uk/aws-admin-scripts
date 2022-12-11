@@ -1,0 +1,549 @@
+# seahow@ - Dec 2022
+#
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Amazon Linux 2 w/CloudWatch, IAM, SSM, Python"
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Prerequisites that must already exist before running this template
+      Parameters:
+      - KeyName 
+      - Subnet
+      - InstanceProfile
+    - Label:
+        default: Instance Config
+      Parameters:
+      - InstanceType
+      - LinuxAMI
+      - PVSize
+      - PVType
+    ParameterLabels:
+      Subnet:
+        default: Subnet this instance will connect to     
+      KeyName:
+        default: Public/Private Key Pair 
+      InstanceType:
+        default: Instance Type
+      LinuxAMI:
+        default: AMI ID
+      TimeZone:
+        default: Timezone to set within the instance
+      InstanceProfile:
+        default: Name of IAM instance profile
+      PVSize:
+        default: Size of the data drive (will be mounted to /data)
+      PVType:
+        default: EBS Volume type for the data drive
+Parameters:
+  Subnet:
+    Type: AWS::EC2::Subnet::Id
+    Description: SubnetId in your Virtual Private Cloud (VPC)
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to this instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  InstanceType:
+    Description: "Select from the drop-down [Note: Prices are rounded and represent linux instances]"
+    Type: String
+    Default: "t3a.micro   | $7/mo   | 2 VCPU  | AMD EPYC 7571 2.2 |  1.0 GiB RAM"
+    AllowedValues:
+    - "t3a.nano    | $3.5/mo | 2 VCPU  | AMD EPYC 7571 2.2 |  0.5 GiB RAM"
+    - "t3a.micro   | $7/mo   | 2 VCPU  | AMD EPYC 7571 2.2 |  1.0 GiB RAM"
+    - "t3a.small   | $14/mo  | 2 VCPU  | AMD EPYC 7571 2.2 |  2.0 GiB RAM"
+    - "t3a.medium  | $28/mo  | 2 VCPU  | AMD EPYC 7571 2.2 |  4.0 GiB RAM"    
+    - "t3a.large   | $55/mo  | 2 VCPU  | AMD EPYC 7571 2.2 |  8.0 GiB RAM"        
+    - "t3a.xlarge  | $110/mo | 4 VCPU  | AMD EPYC 7571 2.2 | 16.0 GiB RAM"
+    - "t3a.2xlarge | $220/mo | 8 VCPU  | AMD EPYC 7571 2.2 | 32.0 GiB RAM"
+  LinuxAMI:
+    Type: String
+    Description: Public SSM Parameter pointing to the latest Amazon Linux 2 AMI
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-ebs
+  TimeZone:
+    Description: Time Zone for instance
+    Type: String
+    Default: "America/St_Johns"
+    AllowedValues:
+    - "America/St_Johns"
+    - "EST5EDT"
+    - "CST6CDT"
+    - "MST7MDT"
+    - "PST8PDT"
+  InstanceProfile:
+    Type: String
+    Description: Ensure the associated role has SSM and Cloudwatch permissions
+  PVSize:
+    Description: Default is 36GB
+    Type: Number
+    Default: "36"
+    MaxValue: "512"
+    MinValue: "36"
+  PVType:
+    Description: EBS Volume Type for /data
+    Type: String
+    Default: "gp3"
+    AllowedValues:
+    - "gp2"
+    - "gp3"
+    - "sc1"
+    - "st1"
+Resources:
+  InstanceLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: 
+        Fn::Join:
+          - ""
+          - - "/"
+            - !Ref AWS::StackName
+            - "/l"
+            - Fn::Select:
+              - 0
+              - Fn::Split:
+                - "-"
+                - Fn::Select:
+                  - 2
+                  - Fn::Split:
+                    - "/"
+                    - !Ref "AWS::StackId"
+      RetentionInDays: 7
+  LinuxInstance:
+    DependsOn:
+    - InstanceLogs
+    Type: AWS::EC2::Instance
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: "PT90M"
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          default:
+            - XX_SetGlobalLinuxParameters
+            - 01_setupCfnHup
+            - 02_config-amazon-cloudwatch-agent
+            - 03_restart_amazon-cloudwatch-agent
+            - 04_utility_box_tweaks
+            - 05_configure
+          UpdateEnvironment:
+            - 02_config-amazon-cloudwatch-agent
+            - 03_restart_amazon-cloudwatch-agent
+        XX_SetGlobalLinuxParameters:
+          files:
+            "/bin/treesize":
+              content: |
+                #/bin/sh
+                du -k --max-depth=1 | sort -nr | awk '
+                    BEGIN {
+                        split("KB,MB,GB,TB", Units, ",");
+                    }
+                    {
+                        u = 1;
+                        while ($1 >= 1024) {
+                          $1 = $1 / 1024;
+                          u += 1
+                        }
+                        $1 = sprintf("%.1f %s", $1, Units[u]);
+                        print $0;
+                    }
+                    '
+              mode: '000777'
+              owner: root
+              group: root              
+          commands:
+            00_install_extras:
+              command: amazon-linux-extras install mate-desktop1.x python3.8 firefox epel -y
+            01_SetTimeZoneEtcLocaltime:
+              command: !Sub if [ "${TimeZone}" != "UDT" ]; then ln -s -f /usr/share/zoneinfo/${TimeZone} /etc/localtime; fi
+              ignoreErrors: "True"
+            02_SetTimeZoneSysconfig:
+              command: !Sub if [ "${TimeZone}" != "UDT" ]; then sed -ibak -e 's/"UTC"/"${TimeZone}"/g' -e 's/true/false/g' /etc/sysconfig/clock; fi
+              ignoreErrors: "True"
+            03_SetHostNameCtl:
+              command: 
+                Fn::Join:
+                  - ""
+                  - - "hostnamectl set-hostname l"
+                    - Fn::Select:
+                      - 0
+                      - Fn::Split:
+                        - "-"
+                        - Fn::Select:
+                          - 2
+                          - Fn::Split:
+                            - "/"
+                            - !Ref "AWS::StackId"
+            04_SetHostFile:
+              command: "echo $( ifconfig eth0 | awk '/inet / {gsub(\"addr:\", \"\" , $2); print $2}' )  $( hostname ) >> /etc/hosts"
+        01_setupCfnHup:
+          files:
+             '/etc/cfn/cfn-hup.conf':
+               content: !Sub |
+                 [main]
+                 stack=${AWS::StackId}
+                 region=${AWS::Region}
+                 interval=1
+               mode: '000400'
+               owner: root
+               group: root
+             '/etc/cfn/hooks.d/amazon-cloudwatch-agent-auto-reloader.conf':
+               content: !Sub |
+                 [cfn-auto-reloader-hook]
+                 triggers=post.update
+                 path=Resources.LinuxInstance.Metadata.AWS::CloudFormation::Init.02_config-amazon-cloudwatch-agent
+                 action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource LinuxInstance --region ${AWS::Region} --configsets UpdateEnvironment
+                 runas=root
+               mode: '000400'
+               owner: root
+               group: root
+             "/lib/systemd/system/cfn-hup.service":
+                content: !Sub |
+                  [Unit]
+                  Description=cfn-hup daemon
+                  [Service]
+                  Type=simple
+                  ExecStart=/opt/aws/bin/cfn-hup
+                  Restart=always
+                  [Install]
+                  WantedBy=multi-user.target
+          commands:
+            01enable_cfn_hup:
+              command: !Sub |
+                systemctl enable cfn-hup.service
+            02start_cfn_hup:
+              command: !Sub |
+                systemctl start cfn-hup.service
+        02_config-amazon-cloudwatch-agent:
+          files:
+            '/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json':
+              content: !Sub |
+                {
+                  "metrics": {
+                    "append_dimensions": {
+                      "AutoScalingGroupName": "${!aws:AutoScalingGroupName}",
+                      "ImageId": "${!aws:ImageId}",
+                      "InstanceId": "${!aws:InstanceId}",
+                      "InstanceType": "${!aws:InstanceType}"
+                    },
+                    "metrics_collected": {
+                      "mem": {
+                        "measurement": [
+                          "mem_used_percent"
+                        ]
+                      },
+                      "swap": {
+                        "measurement": [
+                          "swap_used_percent"
+                        ]
+                      }
+                    }
+                  }
+                }
+        03_restart_amazon-cloudwatch-agent:
+          commands:
+            01_stop_service:
+              command: /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop
+            02_start_service:
+              command: /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
+        04_utility_box_tweaks:
+          packages:
+            yum:
+              expect: []
+              awscli: []
+              moreutils: []
+              awslogs: []
+              expect: []
+              tigervnc-server: []
+              tigervnc-server-module: []
+          files:
+            "/etc/awslogs/epochtohuman.sh":
+              content: |
+                  #!/bin/bash
+                  #
+                  # use this script to parse out Unix Epoch times and convert them to syslog style timestamps
+                  # I use this to make awslogsd capable of ingesting /var/log/audit/audit.log
+                  # 
+                  # example usage: epochtohuman.sh /var/log/audit/audit.log
+
+                  IFS=$'\n'
+
+                  lines=(`tail -n 20 $1`)
+
+                  for olin in ${lines[*]}; do
+                      datt=`echo $olin | perl -nle '/msg=audit\(([0-9]{10}\.[0-9]{3}):/  && print "$1"'`
+                      date_human_readable=`date -d @$datt +%b\ %d\ %H:%M:%S`
+                      echo ${date_human_readable}" "${olin}
+                  done
+              mode: '000700'
+              owner: root
+              group: root
+            "/etc/awslogs/awslogs.conf":
+              content: !Sub |
+                  [general]
+                  state_file= /var/awslogs/state/agent-state
+
+                  [/var/log/cloud-init.log]
+                  datetime_format = %b %d %H:%M:%S
+                  file = /var/log/cloud-init.log
+                  log_group_name = ${InstanceLogs}                  
+                  log_stream_name = /{hostname}/var/log/cloud-init.log
+                  initial_position = start_of_file
+                  time_zone = LOCAL
+
+                  [/var/log/cloud-init-output.log]
+                  file = /var/log/cloud-init-output.log
+                  log_group_name = ${InstanceLogs}                  
+                  log_stream_name = /{hostname}/var/log/cloud-init-output.log
+                  initial_position = start_of_file
+                  time_zone = LOCAL
+
+                  [/var/log/cfn-init.log]
+                  file = /var/log/cfn-init.log
+                  log_group_name = ${InstanceLogs}                 
+                  log_stream_name = /{hostname}/var/log/cfn-init.log
+                  datetime_format = %Y-%m-%d %H:%M:%S,%f
+                  initial_position = start_of_file
+                  time_zone = LOCAL 
+
+                  [/var/log/cfn-init-cmd.log]
+                  file = /var/log/cfn-init.log
+                  log_group_name = ${InstanceLogs}                 
+                  log_stream_name = /{hostname}/var/log/cfn-init-cmd.log
+                  datetime_format = %Y-%m-%d %H:%M:%S,%f
+                  initial_position = start_of_file
+                  time_zone = LOCAL 
+
+                  [/var/log/cfn-hup.log]
+                  file = /var/log/cfn-hup.log
+                  log_group_name = ${InstanceLogs}              
+                  log_stream_name = /{hostname}/var/log/cfn-hup.log
+                  datetime_format = %Y-%m-%d %H:%M:%S,%f
+                  initial_position = start_of_file
+                  time_zone = LOCAL 
+
+                  [/var/log/cfn-wire.log]
+                  file = /var/log/cfn-wire.log
+                  log_group_name = ${InstanceLogs}
+                  log_stream_name = /{hostname}/var/log/cfn-wire.log
+                  datetime_format = %Y-%m-%d %H:%M:%S,%f
+                  initial_position = start_of_file
+                  time_zone = LOCAL 
+
+                  [/var/log/messages]
+                  datetime_format = %b %d %H:%M:%S
+                  file = /var/log/messages
+                  time_zone = ${TimeZone}
+                  log_group_name = ${InstanceLogs}
+                  log_stream_name = /{hostname}/var/log/messages
+                  initial_position = start_of_file
+                  time_zone = LOCAL
+
+                  [/var/log/secure]
+                  datetime_format = %b %d %H:%M:%S
+                  file = /var/log/secure
+                  log_group_name = ${InstanceLogs}
+                  log_stream_name = /{hostname}/var/log/secure
+                  initial_position = start_of_file
+                  time_zone = LOCAL
+
+                  [/var/log/cron]
+                  datetime_format = %b %d %H:%M:%S
+                  file = /var/log/cron
+                  log_group_name = ${InstanceLogs}
+                  log_stream_name = /{hostname}/var/log/cron
+                  initial_position = start_of_file
+                  time_zone = LOCAL
+
+                  [/var/log/audit/audit.log.converted]
+                  file = /var/log/audit/audit.log.converted
+                  log_group_name = ${InstanceLogs}
+                  log_stream_name = /{hostname}/var/log/audit/audit.log.converted
+                  initial_position = start_of_file
+                  time_zone = LOCAL
+                  datetime_format = %b %d %H:%M:%S
+
+                  [/var/log/boot.log]
+                  file = /var/log/boot.log
+                  log_group_name = ${InstanceLogs}
+                  log_stream_name = /{hostname}/var/log/boot.log
+                  initial_position = start_of_file
+                  time_zone = LOCAL
+                  datetime_format = %Y-%m-%d %H:%M:%S,%f
+
+                  [/var/log/yum.log]
+                  file = /var/log/yum.log
+                  log_group_name = ${InstanceLogs}
+                  log_stream_name = /{hostname}/var/log/yum.log
+                  initial_position = start_of_file
+                  time_zone = LOCAL                  
+                  datetime_format = %b %d %H:%M:%S
+
+                  [/var/log/amazon/ssm/amazon-ssm-agent.log]
+                  file = /var/log/amazon/ssm/amazon-ssm-agent.log
+                  log_group_name = ${InstanceLogs}
+                  log_stream_name = /{hostname}/var/log/amazon/ssm/amazon-ssm-agent.log
+                  initial_position = start_of_file
+                  time_zone = LOCAL
+                  datetime_format = %Y-%m-%d %H:%M:%S
+
+                  [/var/log/amazon/ssm/errors.log]
+                  file = /var/log/amazon/ssm/errors.log
+                  log_group_name = ${InstanceLogs}
+                  log_stream_name = /{hostname}/var/log/amazon/ssm/errors.log
+                  initial_position = start_of_file
+                  time_zone = LOCAL
+                  datetime_format = %Y-%m-%d %H:%M:%S
+                 
+                  [/var/log/crontab.log]
+                  file = /var/log/crontab.log
+                  log_group_name = ${InstanceLogs}
+                  log_stream_name = /{hostname}/var/log/crontab.log
+                  initial_position = start_of_file
+                  time_zone = LOCAL
+                  datetime_format = [%Y%m%d-%H:%M:%.S]       
+
+                  [/var/log/dmesg.log.timestamped]
+                  file = /var/log/dmesg.log.timestamped
+                  log_group_name = ${InstanceLogs}
+                  log_stream_name = /{hostname}/var/log/dmesg.log.timestamped
+                  initial_position = start_of_file
+                  time_zone = LOCAL                  
+                  datetime_format = [%a %b %d %H:%M:%S %Y]         
+              mode: "000444"
+              owner: root
+              group: root
+            "/etc/awslogs/awscli.conf":
+              content: !Sub |
+                [plugins]
+                cwlogs = cwlogs
+              
+                [default]
+                region = ${AWS::Region}
+              mode: "000444"
+              owner: root
+              group: root
+            "/opt/aws/setpass.sh":
+              content: !Sub |
+                #!/usr/bin/expect -f
+                set timeout -1
+                spawn passwd ec2-user
+                expect "New password: "
+                send -- "Aws2020@\r"
+                expect "Retype new password: "
+                send -- "Aws2020@\r"
+                expect eof
+              mode: '000777'
+              owner: root
+              group: root
+            "/opt/aws/runvncserver.sh":
+              content: |
+                #!/usr/bin/expect -f
+                set timeout -1
+                spawn vncserver :1
+                expect "Password:"
+                send -- "Aws2020@\r"
+                expect "Verify:"
+                send -- "Aws2020@\r"
+                expect "Would you like to enter a view-only password (y/n)?"
+                send -- "n\r"
+                expect eof
+              mode: '000777'
+              owner: root
+              group: root
+          commands:
+            01_full_yum_update:
+              command: yum update -v -y
+            02_create_state_dir:
+              command: mkdir -p /var/awslogs/state
+            03_enablelogs:
+              command: systemctl enable awslogsd 
+            04_restartlogs:
+              command: systemctl restart awslogsd     
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+            - ""
+            - - ""
+              - Fn::Join:
+                - ""
+                - - "l"
+                  - Fn::Select:
+                    - 0
+                    - Fn::Split:
+                      - "-"
+                      - Fn::Select:
+                        - 2
+                        - Fn::Split:
+                          - "/"
+                          - !Ref "AWS::StackId"
+      ImageId: 
+        Ref: LinuxAMI
+      IamInstanceProfile: 
+        Ref: InstanceProfile
+      InstanceType:
+        Fn::Select:
+        - 0
+        - Fn::Split:
+          - " "
+          - Fn::Select:
+            - 0
+            - Fn::Split:
+              - "|"
+              - Ref: InstanceType
+      Monitoring: true
+      SecurityGroupIds:
+      - Ref: SecurityGroup
+      KeyName:
+        Ref: KeyName
+      SubnetId:
+        Ref: Subnet
+      BlockDeviceMappings:
+        - 
+          DeviceName: /dev/xvdb
+          Ebs:
+            VolumeType: 
+              Ref: PVType
+            VolumeSize: 
+              Ref: PVSize
+      UserData:
+        Fn::Base64: !Sub |
+          Content-Type: multipart/mixed; boundary="//"
+          MIME-Version: 1.0
+          
+          --//
+          Content-Type: text/cloud-config; charset="us-ascii"
+          MIME-Version: 1.0
+          Content-Transfer-Encoding: 7bit
+          Content-Disposition: attachment; filename="cloud-config.txt"
+          
+          #cloud-config
+          bootcmd:
+          - test -z "$(blkid /dev/xvdb)" && mkfs -t xfs -L data /dev/xvdb
+          - mkdir -p /data
+          - mkdir -p /opt/aws
+          
+          mounts:
+          - [ "/dev/xvdb", "/data", "xfs", "defaults,nofail", "0", "2" ]
+          --//
+          Content-Type: text/x-shellscript; charset="us-ascii"
+          MIME-Version: 1.0
+          Content-Transfer-Encoding: 7bit
+          Content-Disposition: attachment; filename="userdata.txt"
+          #!/bin/bash
+          rpm -Uvh https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource LinuxInstance --region ${AWS::Region} --configsets default
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource LinuxInstance --region ${AWS::Region}
+          --//
+Outputs:
+  LinuxInstanceId:
+    Description: Id for Instance
+    Value:
+      Ref: LinuxInstance
+
+
+      
+
