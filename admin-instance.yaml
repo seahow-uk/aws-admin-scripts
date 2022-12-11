@@ -393,6 +393,10 @@ Resources:
               command: ./al2-desktop-installer.sh
               cwd: /opt/aws/aws-admin-scripts
               waitAfterCompletion: 5
+            08_pip_modules:
+              command: pip3 install boto3 argparse
+              cwd: /opt/aws/aws-admin-scripts
+              waitAfterCompletion: 5            
     Properties:
       Tags:
       - Key: Name
