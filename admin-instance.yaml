@@ -159,7 +159,7 @@ Resources:
               group: root              
           commands:
             00_install_extras:
-              command: amazon-linux-extras install mate-desktop1.x python3.8 firefox epel -y
+              command: amazon-linux-extras install python3.8 epel -y
             01_SetTimeZoneEtcLocaltime:
               command: !Sub if [ "${TimeZone}" != "UDT" ]; then ln -s -f /usr/share/zoneinfo/${TimeZone} /etc/localtime; fi
               ignoreErrors: "True"
@@ -259,9 +259,6 @@ Resources:
               awscli: []
               moreutils: []
               awslogs: []
-              expect: []
-              tigervnc-server: []
-              tigervnc-server-module: []
           files:
             "/etc/awslogs/epochtohuman.sh":
               content: |
@@ -427,34 +424,6 @@ Resources:
                 [default]
                 region = ${AWS::Region}
               mode: "000444"
-              owner: root
-              group: root
-            "/opt/aws/setpass.sh":
-              content: !Sub |
-                #!/usr/bin/expect -f
-                set timeout -1
-                spawn passwd ec2-user
-                expect "New password: "
-                send -- "Aws2020@\r"
-                expect "Retype new password: "
-                send -- "Aws2020@\r"
-                expect eof
-              mode: '000777'
-              owner: root
-              group: root
-            "/opt/aws/runvncserver.sh":
-              content: |
-                #!/usr/bin/expect -f
-                set timeout -1
-                spawn vncserver :1
-                expect "Password:"
-                send -- "Aws2020@\r"
-                expect "Verify:"
-                send -- "Aws2020@\r"
-                expect "Would you like to enter a view-only password (y/n)?"
-                send -- "n\r"
-                expect eof
-              mode: '000777'
               owner: root
               group: root
           commands:
