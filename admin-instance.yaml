@@ -61,9 +61,9 @@ Parameters:
     - "t3a.xlarge  | $110/mo | 4 VCPU  | AMD EPYC 7571 2.2 | 16.0 GiB RAM"
     - "t3a.2xlarge | $220/mo | 8 VCPU  | AMD EPYC 7571 2.2 | 32.0 GiB RAM"
   LinuxAMI:
-    Type: String
-    Description: Public SSM Parameter pointing to the latest Amazon Linux 2 AMI
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-ebs
+    Description: Public SSM Parameter pointing to the latest Amazon Linux 2 AMI
   TimeZone:
     Description: Time Zone for instance
     Type: String
