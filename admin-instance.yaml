@@ -466,7 +466,6 @@ Resources:
               command: systemctl enable awslogsd 
             04_restartlogs:
               command: systemctl restart awslogsd
-            05_
     Properties:
       Tags:
       - Key: Name
