@@ -15,12 +15,13 @@ Metadata:
       - InstanceProfile
       - SecurityGroup
     - Label:
-        default: Instance Config
+        default: Optional parameters that can be left at the default
       Parameters:
       - InstanceType
       - LinuxAMI
       - PVSize
       - PVType
+      - GitRepo
     ParameterLabels:
       SecurityGroup:
         default: Security Group for this instance
@@ -40,6 +41,8 @@ Metadata:
         default: Size of the secondary data drive (will be mounted to /data)
       PVType:
         default: EBS Volume type for the secondary data drive
+      GitRepo:
+        default: Git Repo to download admin scripts from
 Parameters:
   Subnet:
     Type: AWS::EC2::Subnet::Id
@@ -80,6 +83,7 @@ Parameters:
     - "CST6CDT"
     - "MST7MDT"
     - "PST8PDT"
+    - "UTC"
   InstanceProfile:
     Type: String
     Description: Ensure the associated role has SSM and Cloudwatch permissions
@@ -101,6 +105,10 @@ Parameters:
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Description: SecurityGroup for this instance
+  GitRepo:
+    Type: String
+    Description: Leave this alone until you move the admin scripts repo internally
+    Default: "https://github.com/seahow-uk/aws-admin-scripts.git"
 Resources:
   InstanceLogs:
     Type: AWS::Logs::LogGroup
@@ -128,7 +136,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: "PT90M"
+        Timeout: "PT15M"
     Metadata:
       AWS::CloudFormation::Init:
         configSets:
@@ -389,7 +397,7 @@ Resources:
             04_restartlogs:
               command: systemctl restart awslogsd
             05_git_clone:
-              command: git clone https://github.com/seahow-uk/aws-admin-scripts.git
+              command: !Sub "git clone ${GitRepo}"
               cwd: /opt/aws
               waitAfterCompletion: 5
             06_chmod:
