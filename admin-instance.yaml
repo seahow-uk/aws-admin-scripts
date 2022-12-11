@@ -256,31 +256,10 @@ Resources:
           packages:
             yum:
               expect: []
-              awscli: []
               moreutils: []
               awslogs: []
+              git: []
           files:
-            "/etc/awslogs/epochtohuman.sh":
-              content: |
-                  #!/bin/bash
-                  #
-                  # use this script to parse out Unix Epoch times and convert them to syslog style timestamps
-                  # I use this to make awslogsd capable of ingesting /var/log/audit/audit.log
-                  # 
-                  # example usage: epochtohuman.sh /var/log/audit/audit.log
-
-                  IFS=$'\n'
-
-                  lines=(`tail -n 20 $1`)
-
-                  for olin in ${lines[*]}; do
-                      datt=`echo $olin | perl -nle '/msg=audit\(([0-9]{10}\.[0-9]{3}):/  && print "$1"'`
-                      date_human_readable=`date -d @$datt +%b\ %d\ %H:%M:%S`
-                      echo ${date_human_readable}" "${olin}
-                  done
-              mode: '000700'
-              owner: root
-              group: root
             "/etc/awslogs/awslogs.conf":
               content: !Sub |
                   [general]
@@ -358,14 +337,6 @@ Resources:
                   initial_position = start_of_file
                   time_zone = LOCAL
 
-                  [/var/log/audit/audit.log.converted]
-                  file = /var/log/audit/audit.log.converted
-                  log_group_name = ${InstanceLogs}
-                  log_stream_name = /{hostname}/var/log/audit/audit.log.converted
-                  initial_position = start_of_file
-                  time_zone = LOCAL
-                  datetime_format = %b %d %H:%M:%S
-
                   [/var/log/boot.log]
                   file = /var/log/boot.log
                   log_group_name = ${InstanceLogs}
@@ -397,22 +368,6 @@ Resources:
                   initial_position = start_of_file
                   time_zone = LOCAL
                   datetime_format = %Y-%m-%d %H:%M:%S
-                 
-                  [/var/log/crontab.log]
-                  file = /var/log/crontab.log
-                  log_group_name = ${InstanceLogs}
-                  log_stream_name = /{hostname}/var/log/crontab.log
-                  initial_position = start_of_file
-                  time_zone = LOCAL
-                  datetime_format = [%Y%m%d-%H:%M:%.S]       
-
-                  [/var/log/dmesg.log.timestamped]
-                  file = /var/log/dmesg.log.timestamped
-                  log_group_name = ${InstanceLogs}
-                  log_stream_name = /{hostname}/var/log/dmesg.log.timestamped
-                  initial_position = start_of_file
-                  time_zone = LOCAL                  
-                  datetime_format = [%a %b %d %H:%M:%S %Y]         
               mode: "000444"
               owner: root
               group: root
@@ -435,6 +390,17 @@ Resources:
               command: systemctl enable awslogsd 
             04_restartlogs:
               command: systemctl restart awslogsd
+            05_git_clone:
+              command: git clone https://github.com/seahow-uk/aws-admin-scripts.git
+              cwd: /opt/aws
+              waitAfterCompletion: 5
+            06_chmod:
+              command: chmod 700 *
+              cwd: /opt/aws/aws-admin-scripts
+            07_install_desktop:
+              command: ./al2-desktop-installer.sh
+              cwd: /opt/aws/aws-admin-scripts
+              waitAfterCompletion: 5
     Properties:
       Tags:
       - Key: Name
