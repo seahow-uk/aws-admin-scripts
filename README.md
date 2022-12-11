@@ -4,6 +4,63 @@ Misc infrastructure management utilities for use with the AWS platform
 
 Authored **independently** by myself, not officially by any employer of mine, past or present.  Meant to serve as examples/starting points for further customization.  No warranty express or implied.  
 
+admin-instance.yaml
+--------------------
+CloudFormation template that will spin up an Amazon Linux 2 instance with SSM and CloudWatch agents + everything needed to run these scripts.  It also creates a log group in CloudWatch and streams important logs to it.  Further, the al2-desktop-installer.sh script mentioned below will be run as part of the setup.  Refer to that section for details.
+
+NOTE: This repo gets cloned to /opt/aws/aws-admin-scripts .  As root, you should be able to cd to that directory and start executing scripts.
+
+![image](https://user-images.githubusercontent.com/112027478/206909795-ffd9e330-9d51-4692-b30e-25559229ff63.png)
+
+**Required parameters:**
+
+    KeyPair - Select an EC2 KeyPair in that region
+
+    Subnet - Select a Subnet in the VPC you would like to deploy this instance to
+
+    SecurityGroup - Select a Security Group you would like to attach to this instance
+
+    InstanceProfile - An IAM Role that has permissions to send messages to EC2, post CloudWatch Metrics, and communicate with SSM
+
+    Note: Also included in this repo is a file called admin-instance-role-policy.json.  
+    This is an example policy which can be used to create an IAM Role with appropriate permissions.
+
+**Optional parameters:**
+
+    InstanceType - Select one of the instance types from the dropdown.  
+    Default is t3a.micro.
+
+    LinuxAMI - You should leave this at the default unless you know what you're doing. 
+    This is pulling the latest AMI ID from a public SSM parameter.
+
+    PVSize - This instance will get a secondary EBS volume mounted on /data this size.  
+    Default is 36.
+
+    PVType - The aforementioned EBS volume will be of the type you select here.  
+    Default is GP3.
+
+    TimeZone - Select one of the TimeZones here.  
+    Note: I need to expand this list.
+
+al2-desktop-installer.sh
+--------------------
+installs and configures MATE + VNC (plus all desktop utilities) for an EC2 instance running Amazon Linux 2 (will fail on other distros)
+
+![image](https://user-images.githubusercontent.com/112027478/204065554-7a3b5585-87b0-4562-8c7a-c28dd8ca0ab0.png)
+
+**Optional parameters:**
+
+    --p <password> 
+        VNC password will be set to AWS@todaysdate (in this format: AWS@yyyymmdd) unless you specify your own
+        for instance, were I to not supply a password and run the script on Nov 26, 2022 it would
+        set the VNC login password to "AWS@20221126".  This is obviously insecure and meant for labs only
+
+    --r <runasuser>
+        VNC will run as root unless you tell it a different user to run as 
+
+    example:
+        ./al2-desktop.sh --p 0neD1rect10nRulez2001 --r ec2-user
+
 ec2-ssm-by-region.py
 --------------------
 track down and diagnose EC2 instances that are not properly reporting in to SSM.
@@ -54,59 +111,4 @@ lists all ebs volumes in a given region that are unattached.  denotes which of t
         - Notice the first one has the "-f True" parameter set, which adds the column headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
 
-al2-desktop-installer.sh
---------------------
-installs and configures MATE + VNC (plus all desktop utilities) for an EC2 instance running Amazon Linux 2 (will fail on other distros)
 
-![image](https://user-images.githubusercontent.com/112027478/204065554-7a3b5585-87b0-4562-8c7a-c28dd8ca0ab0.png)
-
-**Optional parameters:**
-
-    --p <password> 
-        VNC password will be set to AWS@todaysdate (in this format: AWS@yyyymmdd) unless you specify your own
-        for instance, were I to not supply a password and run the script on Nov 26, 2022 it would
-        set the VNC login password to "AWS@20221126".  This is obviously insecure and meant for labs only
-
-    --r <runasuser>
-        VNC will run as root unless you tell it a different user to run as 
-
-    example:
-        ./al2-desktop.sh --p 0neD1rect10nRulez2001 --r ec2-user
-
-admin-instance.yaml
---------------------
-CloudFormation template that will spin up an Amazon Linux 2 instance with SSM and CloudWatch agents + everything needed to run these scripts.  It also creates a log group in CloudWatch and streams important logs to it.  Further, the al2-desktop-installer.sh script mentioned above will be run as part of the setup.  Refer to that section for details.
-
-NOTE: This repo gets cloned to /opt/aws/aws-admin-scripts .  As root, you should be able to cd to that directory and start executing scripts.
-
-![image](https://user-images.githubusercontent.com/112027478/206909795-ffd9e330-9d51-4692-b30e-25559229ff63.png)
-
-**Required parameters:**
-
-    KeyPair - Select an EC2 KeyPair in that region
-
-    Subnet - Select a Subnet in the VPC you would like to deploy this instance to
-
-    SecurityGroup - Select a Security Group you would like to attach to this instance
-
-    InstanceProfile - An IAM Role that has permissions to send messages to EC2, post CloudWatch Metrics, and communicate with SSM
-
-    Note: Also included in this repo is a file called admin-instance-role-policy.json.  
-    This is an example policy which can be used to create an IAM Role with appropriate permissions.
-
-**Optional parameters:**
-
-    InstanceType - Select one of the instance types from the dropdown.  
-    Default is t3a.micro.
-
-    LinuxAMI - You should leave this at the default unless you know what you're doing. 
-    This is pulling the latest AMI ID from a public SSM parameter.
-
-    PVSize - This instance will get a secondary EBS volume mounted on /data this size.  
-    Default is 36.
-
-    PVType - The aforementioned EBS volume will be of the type you select here.  
-    Default is GP3.
-
-    TimeZone - Select one of the TimeZones here.  
-    Note: I need to expand this list.
