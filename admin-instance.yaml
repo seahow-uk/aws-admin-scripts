@@ -81,7 +81,7 @@ Parameters:
     Type: String
     Default: "NDT"
     AllowedValues:
-    - "NST
+    - "NST"
     - "NDT"
     - "GB"
     - "CET"
