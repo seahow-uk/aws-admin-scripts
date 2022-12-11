@@ -54,7 +54,7 @@ Parameters:
   InstanceType:
     Description: "Select from the drop-down [Note: Prices are rounded and represent linux, on-demand, in us-east-1]"
     Type: String
-    Default: "t3a.nano    | $3.5/mo | 2 VCPU  | AMD EPYC 7571 2.2 |  0.5 GiB RAM"
+    Default: "t3a.micro   | $7/mo   | 2 VCPU  | AMD EPYC 7571 2.2 |  1.0 GiB RAM"
     AllowedValues:
       - "t3a.nano    | $3.5/mo | 2 VCPU  | AMD EPYC 7571 2.2 |  0.5 GiB RAM"
       - "t3a.micro   | $7/mo   | 2 VCPU  | AMD EPYC 7571 2.2 |  1.0 GiB RAM"
