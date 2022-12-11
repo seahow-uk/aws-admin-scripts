@@ -13,6 +13,7 @@ Metadata:
       - KeyName 
       - Subnet
       - InstanceProfile
+      - SecurityGroup
     - Label:
         default: Instance Config
       Parameters:
@@ -21,6 +22,8 @@ Metadata:
       - PVSize
       - PVType
     ParameterLabels:
+      SecurityGroup:
+        default: Security Group for this instance
       Subnet:
         default: Subnet this instance will connect to     
       KeyName:
@@ -89,6 +92,9 @@ Parameters:
     - "gp3"
     - "sc1"
     - "st1"
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: SecurityGroup for this instance
 Resources:
   InstanceLogs:
     Type: AWS::Logs::LogGroup
