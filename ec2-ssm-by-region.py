@@ -15,6 +15,10 @@ arguments:
     -b or --broken [True/False]
         ONLY return instances where SSM isn't able to see the agent at present
 
+    -p or --profile [String]
+        Specify the AWS client profile to use - found under ~/.aws/credentials
+        If you don't have multiple profiles, leave this alone
+
 prerequisites:
 
     pip install boto3
@@ -88,6 +92,11 @@ def setup_args():
                         action='store',
                         help='ONLY show broken SSM agents')
 
+    parser.add_argument('-p', '--profile',
+                        required=False,
+                        action='store',
+                        help='If you want to use a non-default profile')
+
     return (parser.parse_args())
 
 def main():
@@ -111,17 +120,24 @@ def main():
         ## change this to True if you want to only see broken SSM agents by default
         broken = "False"
 
+    if args.profile:
+        profile = str(args.profile)
+    else:
+        ## change this if you want to change the profile to use
+        profile = "default"
+
     ## boto3 is the main python sdk for AWS
     ## you open connections on a per-service basis
-    ec2 = boto3.resource('ec2',region_name=region)
-    ssm = boto3.client('ssm',region_name=region)
+    session = boto3.Session(profile_name=profile)
+    ec2 = session.resource('ec2',region_name=region)
+    ssm = session.client('ssm',region_name=region)
 
     ## retrieve ec2 instance data for everything in the target region
-    ## see: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.describe_instance_information
+    ## see: https://session.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.describe_instance_information
     ec2_data = ec2.instances.all()
 
     ## retrieve ssm instance data for all EC2 Instances in the target region
-    ## see: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.describe_instance_information
+    ## see: https://session.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.describe_instance_information
     ssm_data = ssm.describe_instance_information(
         Filters=[
             {

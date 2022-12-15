@@ -12,6 +12,10 @@ arguments:
     -f or --fieldnames [True/False]
         Whether or not to print a header for the CSV (default is False)
 
+    -p or --profile [String]
+        Specify the AWS client profile to use - found under ~/.aws/credentials
+        If you don't have multiple profiles, leave this alone
+
 prerequisites:
 
     pip install boto3
@@ -41,9 +45,6 @@ import argparse, time, os, json
 from datetime import datetime
 from datetime import timedelta
 
-STS_CLIENT = boto3.client('sts')
-CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
-
 def setup_args():
     parser = argparse.ArgumentParser(
         description='Optional arguments')
@@ -57,6 +58,11 @@ def setup_args():
                         required=False,
                         action='store',
                         help='Whether to include a CSV header')
+
+    parser.add_argument('-p', '--profile',
+                        required=False,
+                        action='store',
+                        help='If you want to use a non-default profile')
 
     return (parser.parse_args())
 
@@ -75,9 +81,19 @@ def main():
         ## change this to True if you want the header to print by default
         fieldnames = False
 
+    if args.profile:
+        profile = str(args.profile)
+    else:
+        ## change this if you want to change the profile to use
+        profile = "default"
+
+    session = boto3.Session(profile_name=profile)
+    STS_CLIENT = session.client('sts')
+    CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
+
     ## boto3 is the main python sdk for AWS
     ## you open connections on a per-service basis
-    ec2 = boto3.resource('ec2',region_name=region)
+    ec2 = session.resource('ec2',region_name=region)
 
     ## retrieve all ebs volume info in the target region
     vol_data = ec2.volumes.filter(
