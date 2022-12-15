@@ -117,16 +117,9 @@ def main():
             ]
         )
         print ("creating snapshot for volume: " + vol)
-
+        snapshot.wait_until_completed()
+        print ("snapshot " + snapshot.snapshot_id + " complete.")
         snapshot_id_list.append(snapshot.snapshot_id)
-
-        ## only wait on the last one or it will take forever
-
-        if count == len(volume_id_list):
-            print("this is the last snapshot being created so we will wait until it is done")
-            snapshot.wait_until_completed()
-
-    print ("snapshot_id_list: " + str(snapshot_id_list))
 
     count = 0
     for snap in snapshot_id_list:
@@ -140,7 +133,7 @@ def main():
 
     print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
     print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
-    
+
 if __name__ == "__main__":
     exit(main())                        
                     

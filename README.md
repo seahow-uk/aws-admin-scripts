@@ -111,4 +111,17 @@ lists all ebs volumes in a given region that are unattached.  denotes which of t
         - Notice the first one has the "-f True" parameter set, which adds the column headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
 
+ebs-snapshot-to-archive.py
+--------------------
+given a list of volume-ids in a file (one per line, no other characters), this will snapshot the volumes in question, wait for that to finish, then move the snapshots to the archive tier.  The idea here is you want to take one last snapshot for the record before deleting a list.
+
+![ebs-snaps](https://user-images.githubusercontent.com/112027478/201394313-691ff847-9636-4598-bd5e-97ba5c0d0a16.png)
+
+**To produce the above example:**
+
+    python ebs-snapshot-to-archive.py -f ./my-volume-list.txt -p prod -r eu-west-1
+
+        - The example above reads a file called my-volume-list.txt in the current directory
+        - Notice it has the -p parameter set, this means it will use the "prod" profile from ~/.aws/credentials
+        - Finally, the region has to be specified unless you are operating on us-east-1
 
