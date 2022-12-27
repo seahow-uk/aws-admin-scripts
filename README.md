@@ -59,7 +59,7 @@ installs and configures MATE + VNC (plus all desktop utilities) for an EC2 insta
         VNC will run as root unless you tell it a different user to run as 
 
     example:
-        ./al2-desktop.sh --p 0neD1rect10nRulez2001 --r ec2-user
+        ./al2-desktop-installer.sh --p 0neD1rect10nRulez2001 --r ec2-user
 
 ec2-ssm-by-region.py
 --------------------
