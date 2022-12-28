@@ -59,7 +59,7 @@ installs and configures MATE + VNC (plus all desktop utilities) for an EC2 insta
         VNC will run as root unless you tell it a different user to run as 
 
     example:
-        ./al2-desktop.sh --p 0neD1rect10nRulez2001 --r ec2-user
+        ./al2-desktop-installer.sh --p 0neD1rect10nRulez2001 --r ec2-user
 
 ec2-ssm-by-region.py
 --------------------
@@ -115,7 +115,7 @@ ebs-snapshot-to-archive.py
 --------------------
 given a list of volume-ids in a file (one per line, no other characters), this will snapshot the volumes in question, wait for that to finish, then move the snapshots to the archive tier.  The idea here is you want to take one last snapshot for the record before deleting a list.
 
-![ebs-snaps](https://user-images.githubusercontent.com/112027478/201394313-691ff847-9636-4598-bd5e-97ba5c0d0a16.png)
+![image](https://user-images.githubusercontent.com/112027478/207862481-bde0fd32-0919-4416-8587-2987bc06bb96.png)
 
 **To produce the above example:**
 
