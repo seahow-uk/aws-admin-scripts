@@ -78,9 +78,14 @@ systemctl daemon-reload
 systemctl enable vncserver@:1.service
 systemctl start vncserver@:1.service
 
-# install all the various widgets and utilities for MATE desktop
+# install all the default widgets and utilities for MATE desktop
 yum install mate* -y
 
 # install a GUI device manager style utility.  This one appears under Applications > System Tools > Hardware Lister
 yum install lshw-gui 
 
+# install a GUI utility for NetworkManager.  This will appear under System > Preferences > Internet and Network > Network Connections
+yum install network-manager-applet -y
+
+# this forces the vnc server to restart after we add utilities.  some of them seem to need this.
+systemctl restart vncserver@:1.service
