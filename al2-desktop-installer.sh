@@ -87,5 +87,6 @@ yum install lshw-gui
 # install a GUI utility for NetworkManager.  This will appear under System > Preferences > Internet and Network > Network Connections
 yum install network-manager-applet -y
 
-# this forces the vnc server to restart after we add utilities.  some of them seem to need this.
+# this forces the vnc server to restart after we add utilities.  for some weird reason, a temp file for xwindows gets stuck sometimes.
+rm -rf  /tmp/.X11-unix/X1
 systemctl restart vncserver@:1.service
