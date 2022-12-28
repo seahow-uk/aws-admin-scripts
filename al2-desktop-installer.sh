@@ -82,7 +82,7 @@ systemctl start vncserver@:1.service
 yum install mate* -y
 
 # install a GUI device manager style utility.  This one appears under Applications > System Tools > Hardware Lister
-yum install lshw-gui 
+yum install lshw-gui -y
 
 # install a GUI utility for NetworkManager.  This will appear under System > Preferences > Internet and Network > Network Connections
 yum install network-manager-applet -y
