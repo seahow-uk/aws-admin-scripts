@@ -81,3 +81,6 @@ systemctl start vncserver@:1.service
 # install all the various widgets and utilities for MATE desktop
 yum install mate* -y
 
+# install a GUI device manager style utility.  This one appears under Applications > System Tools > Hardware Lister
+yum install lshw-gui 
+
