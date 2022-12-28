@@ -20,7 +20,7 @@
 #       VNC will run as root unless you tell it a different user to run as with this
 #
 # example:
-#       ./al2-desktop.sh --p 0neD1rect10nRulez2001! --r ec2-user
+#       ./al2-desktop-installer.sh --p 0neD1rect10nRulez2001! --r someuser
 #       
 #
 # once this script is complete, you should be able to VNC to this on port 5901
