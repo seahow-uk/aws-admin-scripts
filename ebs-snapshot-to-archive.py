@@ -71,17 +71,19 @@ def main():
     if args.profile:
         profile = str(args.profile)
     else:
-        ## change this if you want to change the profile to use
-        profile = "default"
+        profile = "noprofile"
+
+    ## Addresses the case where user just wants to use environment variables or default profile
+    if (profile == "noprofile"):
+        session = boto3.Session()
+    else:
+        session = boto3.Session(profile_name=profile)   
 
     # Using readlines() to get the ebs volume-id list
     volume_list_file = open(filename, "r")
     Lines = volume_list_file.readlines()
     count = 0
 
-    ## boto3 is the main python sdk for AWS
-    ## you open connections on a per-service basis
-    session = boto3.Session(profile_name=profile)
     ec2client = session.client('ec2',region_name=region)
     ec2resource = session.resource('ec2',region_name=region)
     

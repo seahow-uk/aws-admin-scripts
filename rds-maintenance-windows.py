@@ -12,6 +12,10 @@ arguments:
     -f or --fieldnames [True/False]
         Whether or not to print a header for the CSV (default is False)
 
+    -p or --profile [String]
+        Specify the AWS client profile to use - found under ~/.aws/credentials
+        If you don't have multiple profiles, leave this alone
+
 prerequisites:
 
     pip install boto3
@@ -63,6 +67,17 @@ def main():
         ## change this to True if you want the header to print by default
         fieldnames = False
     
+    if args.profile:
+        profile = str(args.profile)
+    else:
+        profile = "noprofile"
+
+    ## Addresses the case where user just wants to use environment variables or default profile
+    if (profile == "noprofile"):
+        session = boto3.Session()
+    else:
+        session = boto3.Session(profile_name=profile)   
+    
     ## set up the timezone-to-region mapping
     region_utc_offset_no_dst = {
         "us-gov-west-1" : "-8",
@@ -102,7 +117,7 @@ def main():
 
     ## boto3 is the main python sdk for AWS
     ## you open connections on a per-service basis
-    rds = boto3.client('rds',region_name=region)
+    rds = session.client('rds',region_name=region)
 
     rds_data = rds.describe_db_instances()
 

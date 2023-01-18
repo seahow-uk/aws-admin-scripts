@@ -123,12 +123,14 @@ def main():
     if args.profile:
         profile = str(args.profile)
     else:
-        ## change this if you want to change the profile to use
-        profile = "default"
+        profile = "noprofile"
 
-    ## boto3 is the main python sdk for AWS
-    ## you open connections on a per-service basis
-    session = boto3.Session(profile_name=profile)
+    ## Addresses the case where user just wants to use environment variables or default profile
+    if (profile == "noprofile"):
+        session = boto3.Session()
+    else:
+        session = boto3.Session(profile_name=profile)   
+
     ec2 = session.resource('ec2',region_name=region)
     ssm = session.client('ssm',region_name=region)
 

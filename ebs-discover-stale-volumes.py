@@ -84,10 +84,14 @@ def main():
     if args.profile:
         profile = str(args.profile)
     else:
-        ## change this if you want to change the profile to use
-        profile = "default"
+        profile = "noprofile"
 
-    session = boto3.Session(profile_name=profile)
+    ## Addresses the case where user just wants to use environment variables or default profile
+    if (profile == "noprofile"):
+        session = boto3.Session()
+    else:
+        session = boto3.Session(profile_name=profile)   
+
     STS_CLIENT = session.client('sts')
     CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
 
