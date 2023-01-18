@@ -50,6 +50,11 @@ def setup_args():
                         action='store',
                         help='Whether to include a CSV header')
 
+    parser.add_argument('-p', '--profile',
+                        required=False,
+                        action='store',
+                        help='If you want to use a non-default profile')
+
     return (parser.parse_args())
 
 def main():
