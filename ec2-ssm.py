@@ -88,11 +88,14 @@ def main():
     if args.profile:
         profile = str(args.profile)
     else:
-        ## change this if you want to change the profile to use
-        profile = "default"
+        profile = "noprofile"
 
-    ## boto3 is the main python sdk for AWS
-    session = boto3.Session(profile_name=profile)
+    ## Addresses the case where user just wants to use environment variables or default profile
+    if (profile == "noprofile"):
+        session = boto3.Session()
+    else:
+        session = boto3.Session(profile_name=profile)   
+    
     ec2 = session.client('ec2')
     regions = [region['RegionName'] for region in ec2.describe_regions()['Regions']]
 
@@ -137,14 +140,25 @@ def main():
 
         ## loop over the list retrieved from ec2
         for instance in ec2_data:
-
+            
+            # stringify instance attributes from boto3 resource
             ec2_id = str(instance.id)
             ec2_type = str(instance.instance_type)
-            ec2_az = str(instance.placement["AvailabilityZone"])
-            ec2_iam = str(instance.iam_instance_profile["Arn"].split("/")[1])
             ec2_ip = str(instance.private_ip_address)
             ec2_pub = str(instance.public_ip_address)
-            
+
+            # As this is a reference which could possibly be of type None, add this logic to prevent an error
+            if instance.placement["AvailabilityZone"] is not None:
+                ec2_az = str(instance.placement["AvailabilityZone"])
+            else:
+                ec2_az = "None"
+
+            # As this is a reference which could possibly be of type None, add this logic to prevent an error
+            if instance.instance.iam_instance_profile["Arn"] is not None:
+                ec2_iam = str(instance.iam_instance_profile["Arn"].split("/")[1])
+            else:
+                ec2_iam = "None"
+
             ## first set a marker so we can tell if there is an ec2 instance with no corresponding ssm record at all.  We will count this as broken too.
             no_ssm_hits = True
 
