@@ -154,7 +154,7 @@ def main():
                 ec2_az = "None"
 
             # As this is a reference which could possibly be of type None, add this logic to prevent an error
-            if instance.instance.iam_instance_profile is not None:
+            if instance.iam_instance_profile is not None:
                 ec2_iam = str(instance.iam_instance_profile["Arn"].split("/")[1])
             else:
                 ec2_iam = "None"
