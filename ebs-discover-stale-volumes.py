@@ -112,11 +112,28 @@ def main():
     ## If profile is set to "all", get a list of available local profiles on this box
     if allprofilesallregions == "True" or allprofilesallregions == "true":
         profile_list = boto3.session.Session().available_profiles
+        ec2 = session.client('ec2')
         region_list = [region['RegionName'] for region in ec2.describe_regions()['Regions']]
     else:
         # I realize this is clunky, this is something I'm adding onsite for a specific last minute request
         profile_list = profile.split()
         region_list = region.split()
+    
+    if fieldnames == True:
+        ## create header  
+        print(
+            "Profile" + "," +
+            "Account" + "," +
+            "Vol ID" + "," +
+            "Vol Name" + "," +
+            "Avail Zone" + "," +
+            "Vol Type" + "," +
+            "Encrypted" + "," +
+            "GB Size" + "," +
+            "Created" + "," +            
+            "Snaps in Archive" + "," +
+            "Most Recent Snap in Archive"
+        )
 
     for this_profile in profile_list:
         # Open a session and get the info for list particular profile
@@ -125,109 +142,106 @@ def main():
             session = boto3.Session()
         else:
             session = boto3.Session(profile_name=this_profile)
-        STS_CLIENT = session.client('sts')
-        CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
 
-        # Loop over the region_list, which is either a single specified region or all of them
-        for this_region in region_list:
-            ## boto3 is the main python sdk for AWS
-            ## you open connections on a per-service basis
-            ec2 = session.resource('ec2',region_name=this_region)
+        try:
+            STS_CLIENT = session.client('sts')
+            CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
+            continue_listing = True
+        except:
+            print("For some reason, I couldn't get the current Account ID from the STS service for profile " + this_profile + " .  This can be caused by a profile meant for a snow family device or insufficient permissions")
+            continue_listing = False
 
-            ## retrieve all ebs volume info in the target region
-            vol_data = ec2.volumes.filter(
-                Filters=[
-                    {
-                        'Name': 'status',
-                        'Values': [
-                            'available',
-                        ]           
-                    }
-                ]
-            )
+        if continue_listing == True:
+            # Loop over the region_list, which is either a single specified region or all of them
+            for this_region in region_list:
+                ## boto3 is the main python sdk for AWS
+                ## you open connections on a per-service basis
+                ec2 = session.resource('ec2',region_name=this_region)
 
-            ## retrieve all snapshots owned by this account in this region, excluding the many public ones
-            snap_data = ec2.snapshots.filter(
-                Filters=[
-                    {
-                        'Name': 'status',
-                        'Values': [
-                            'completed',
-                        ],
-                        'Name': 'owner-id',
-                        'Values': [
-                            CURRENT_ACCOUNT_ID,
-                        ],
-                        'Name': 'storage-tier',
-                        'Values': [
-                            'archive',
-                        ]
-                    }
-                ]
-            )
-
-            ## set up how we want our dates formatted
-            date_format_str = '%B %Y'
-
-            if fieldnames == "True" or fieldnames == "true":
-                ## create header for the CSV but only if the argument -f True was passed
-                print(
-                    "Vol ID" + "," +
-                    "Vol Name" + "," +
-                    "Avail Zone" + "," +
-                    "Vol Type" + "," +
-                    "Encrypted" + "," +
-                    "GB Size" + "," +
-                    "Created" + "," +            
-                    "Snaps in Archive" + "," +
-                    "Most Recent Snap in Archive"
+                ## retrieve all ebs volume info in the target region
+                vol_data = ec2.volumes.filter(
+                    Filters=[
+                        {
+                            'Name': 'status',
+                            'Values': [
+                                'available',
+                            ]           
+                        }
+                    ]
                 )
 
-            ## loop over the list retrieved from ec2
-            for volume in vol_data:
+                ## retrieve all snapshots owned by this account in this region, excluding the many public ones
+                snap_data = ec2.snapshots.filter(
+                    Filters=[
+                        {
+                            'Name': 'status',
+                            'Values': [
+                                'completed',
+                            ],
+                            'Name': 'owner-id',
+                            'Values': [
+                                CURRENT_ACCOUNT_ID,
+                            ],
+                            'Name': 'storage-tier',
+                            'Values': [
+                                'archive',
+                            ]
+                        }
+                    ]
+                )
 
-                vol_name = "unnamed"
+                ## set up how we want our dates formatted
+                date_format_str = '%B %Y'
 
-                if volume.tags:
-                    for t in volume.tags:
-                        if t["Key"] == 'Name':
-                            vol_name = t["Value"]  
 
-                vol_id = str(volume.id)
-                vol_type = str(volume.volume_type)
-                vol_az = str(volume.availability_zone)
-                vol_size = str(volume.size)
-                vol_state = str(volume.state)
-                vol_encrypted = str(volume.encrypted)
-                vol_created = str(volume.create_time.strftime(date_format_str))
-                
-                snaps_in_volume=0
-                snaps_in_volume_list=[]
-                for snap in snap_data:
-                    if snap.volume_id == vol_id:
-                        snaps_in_volume=snaps_in_volume+1
-                        snaps_in_volume_list.append(snap.start_time)
 
-                most_recent_snap_date = 'none'
+                ## loop over the list retrieved from ec2
+                for volume in vol_data:
 
-                if snaps_in_volume > 0:
-                    most_recent_snap_date = max(snaps_in_volume_list).strftime(date_format_str)
+                    vol_name = "unnamed"
 
-                vol_archived = most_recent_snap_date
+                    if volume.tags:
+                        for t in volume.tags:
+                            if t["Key"] == 'Name':
+                                vol_name = t["Value"]  
 
-                if (vol_state) == "available":
+                    vol_id = str(volume.id)
+                    vol_type = str(volume.volume_type)
+                    vol_az = str(volume.availability_zone)
+                    vol_size = str(volume.size)
+                    vol_state = str(volume.state)
+                    vol_encrypted = str(volume.encrypted)
+                    vol_created = str(volume.create_time.strftime(date_format_str))
+                    
+                    snaps_in_volume=0
+                    snaps_in_volume_list=[]
+                    for snap in snap_data:
+                        if snap.volume_id == vol_id:
+                            snaps_in_volume=snaps_in_volume+1
+                            snaps_in_volume_list.append(snap.start_time)
 
-                    print(
-                        vol_id + "," +
-                        vol_name + "," +
-                        vol_az + "," + 
-                        vol_type + "," +
-                        vol_encrypted + "," +
-                        vol_size + "," + 
-                        vol_created + "," + 
-                        str(snaps_in_volume) + "," +
-                        vol_archived
-                    )
+                    most_recent_snap_date = 'none'
+
+                    if snaps_in_volume > 0:
+                        most_recent_snap_date = max(snaps_in_volume_list).strftime(date_format_str)
+
+                    vol_archived = most_recent_snap_date
+
+                    if (vol_state) == "available":
+
+                        print(
+                            this_profile + "," +
+                            CURRENT_ACCOUNT_ID + "," +
+                            vol_id + "," +
+                            vol_name + "," +
+                            vol_az + "," + 
+                            vol_type + "," +
+                            vol_encrypted + "," +
+                            vol_size + "," + 
+                            vol_created + "," + 
+                            str(snaps_in_volume) + "," +
+                            vol_archived
+                        )
 
 if __name__ == "__main__":
     exit(main())                        
