@@ -98,6 +98,34 @@ ebs-discover-stale-volumes.py
 --------------------
 Pulls a list of all volumes that are currently unattached and gives you their details, including whether or not it has at least one snapshot in the Archive tier.  If there is more than one snapshot in the Archive tier, it will show the most recent one’s date.
 
+**Optional parameters:**
+
+    -r or --region [String]
+        AWS region to use (default is us-east-1)
+
+    -f or --fieldnames [True/False]
+        Whether or not to print a header for the CSV (default is True)
+
+    -p or --profile [String]
+        Specify the AWS client profile to use - found under ~/.aws/credentials
+        If you don't have multiple profiles, leave this alone
+    
+    -a or --allprofilesallregions [True/False]
+        Loop over all configured AWS CLI profiles on this local machine AND pull data from all regions (default is False)
+        Note: The script looks for profiles that point to the same account ID and will ignore all duplicates after the first
+              This is common when one has a default profile AND an explicit profile pointing to the same account
+
+![image](https://user-images.githubusercontent.com/112027478/218100475-249eb3ac-8d30-4ca5-b3ab-1258d31d843c.png)
+
+**To produce the above example (all profiles and all regions):**
+
+    python3 ebs-discover-stale-volumes.py -a True
+
+        - This option will make it loop over all profiles explicitly configured in your local AWS CLI client (~/.aws/credentials)
+        - Within each profile, it will loop over all regions that account can see (meaning this could vary if some accounts have optional regions enabled)
+        - If it encounters a problem with a given profile (such as insufficient permissions), it continues on and gives an error at the end of the output
+        - It will ignore repeats of the same Account ID.  So if you have a default profile then an explicitly named profile pointing to the same account it only gets the first one
+
 ![ebs-snaps](https://user-images.githubusercontent.com/112027478/201394313-691ff847-9636-4598-bd5e-97ba5c0d0a16.png)
 
 **To produce the above example (specific regions rolled into one CSV):**
@@ -110,17 +138,6 @@ Pulls a list of all volumes that are currently unattached and gives you their de
         - The example above puts the data for several European regions into one CSV
         - Notice the all but the first one has the "-f False" parameter set, to avoid duplicating headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
-
-![image](https://user-images.githubusercontent.com/112027478/218100475-249eb3ac-8d30-4ca5-b3ab-1258d31d843c.png)
-
-**To produce the above example (all profiles and all regions):**
-
-    python3 ebs-discover-stale-volumes.py -a True
-
-        - This option will make it loop over all profiles explicitly configured in your local AWS CLI client (~/.aws/credentials)
-        - Within each profile, it will loop over all regions that account can see (meaning this could vary if some accounts have optional regions enabled)
-        - If it encounters a problem with a given profile (such as insufficient permissions), it continues on and gives an error at the end of the output
-        - It will ignore repeats of the same Account ID.  So if you have a default profile then an explicitly named profile pointing to the same account it only gets the first one
 
 ebs-snapshot-to-archive.py
 --------------------
