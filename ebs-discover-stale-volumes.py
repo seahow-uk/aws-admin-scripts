@@ -148,7 +148,7 @@ def main():
             CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
             continue_listing = True
         except:
-            print("For some reason, I couldn't get the current Account ID from the STS service for profile " + this_profile + " .  This can be caused by a profile meant for a snow family device or insufficient permissions")
+            print("ERROR: cannot get the current Account ID from the STS service for profile " + this_profile + ".  This can be caused by a profile meant for a snow family device or insufficient permissions")
             continue_listing = False
 
         if continue_listing == True:
