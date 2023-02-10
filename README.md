@@ -69,10 +69,10 @@ track down and diagnose EC2 instances that are not properly reporting in to SSM.
 
 **To produce the above example (multiple regions rolled into one CSV):**
 
-    python ec2-instances-in-ssm-by-region.py -r eu-west-1 -f True > mycsv.csv
-    python ec2-instances-in-ssm-by-region.py -r eu-west-2 >> mycsv.csv
-    python ec2-instances-in-ssm-by-region.py -r eu-west-3 >> mycsv.csv
-    python ec2-instances-in-ssm-by-region.py -r eu-north-1 >> mycsv.csv
+    python3 ec2-instances-in-ssm-by-region.py -r eu-west-1 -f True > mycsv.csv
+    python3 ec2-instances-in-ssm-by-region.py -r eu-west-2 >> mycsv.csv
+    python3 ec2-instances-in-ssm-by-region.py -r eu-west-3 >> mycsv.csv
+    python3 ec2-instances-in-ssm-by-region.py -r eu-north-1 >> mycsv.csv
 
         - The example above puts the data for several European regions into one CSV
         - Notice the first one has the "-f True" parameter set, which adds the column headers
@@ -86,9 +86,9 @@ figure out what the maintenance windows are set to across deployed rds instances
 
 **To produce the above example (multiple regions rolled into one CSV):**
 
-    python ec2-instances-in-ssm-by-region.py -r us-east-1 -f True > mycsv.csv
-    python ec2-instances-in-ssm-by-region.py -r ap-southeast-1 >> mycsv.csv
-    python ec2-instances-in-ssm-by-region.py -r ap-northeast-1 >> mycsv.csv
+    python3 ec2-instances-in-ssm-by-region.py -r us-east-1 -f True > mycsv.csv
+    python3 ec2-instances-in-ssm-by-region.py -r ap-southeast-1 >> mycsv.csv
+    python3 ec2-instances-in-ssm-by-region.py -r ap-northeast-1 >> mycsv.csv
 
         - The example above puts the data for several European regions into one CSV
         - Notice the first one has the "-f True" parameter set, which adds the column headers
@@ -102,10 +102,10 @@ Pulls a list of all volumes that are currently unattached and gives you their de
 
 **To produce the above example (specific regions rolled into one CSV):**
 
-    python ebs-discover-stale-volumes.py -r eu-west-1 > mycsv.csv
-    python ebs-discover-stale-volumes.py -r eu-west-2 -f False >> mycsv.csv
-    python ebs-discover-stale-volumes.py -r eu-west-3 -f False >> mycsv.csv
-    python ebs-discover-stale-volumes.py -r eu-north-1 -f False >> mycsv.csv
+    python3 ebs-discover-stale-volumes.py -r eu-west-1 > mycsv.csv
+    python3 ebs-discover-stale-volumes.py -r eu-west-2 -f False >> mycsv.csv
+    python3 ebs-discover-stale-volumes.py -r eu-west-3 -f False >> mycsv.csv
+    python3 ebs-discover-stale-volumes.py -r eu-north-1 -f False >> mycsv.csv
 
         - The example above puts the data for several European regions into one CSV
         - Notice the all but the first one has the "-f False" parameter set, to avoid duplicating headers
@@ -113,7 +113,7 @@ Pulls a list of all volumes that are currently unattached and gives you their de
 
 **To produce the above example (all profiles and all regions):**
 
-    python ebs-discover-stale-volumes.py -a True
+    python3 ebs-discover-stale-volumes.py -a True
 
         - This option will make it loop over all profiles explicitly configured in your local AWS CLI client (~/.aws/credentials)
         - Within each profile, it will loop over all regions that account can see (meaning this could vary if some accounts have optional regions enabled)
@@ -128,7 +128,7 @@ given a list of volume-ids in a file (one per line, no other characters), this w
 
 **To produce the above example:**
 
-    python ebs-snapshot-to-archive.py -f ./my-volume-list.txt -p prod -r eu-west-1
+    python3 ebs-snapshot-to-archive.py -f ./my-volume-list.txt -p prod -r eu-west-1
 
         - The example above reads a file called my-volume-list.txt in the current directory
         - Notice it has the -p parameter set, this means it will use the "prod" profile from ~/.aws/credentials
