@@ -120,7 +120,11 @@ def main():
 
     for this_profile in profile_list:
         # Open a session and get the info for list particular profile
-        session = boto3.Session(profile_name=this_profile)
+        # UNLESS they didn't specify a profile at all in which case just use env vars or whatever they're doing
+        if this_profile == "noprofile":
+            session = boto3.Session()
+        else:
+            session = boto3.Session(profile_name=this_profile)
         STS_CLIENT = session.client('sts')
         CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
 
