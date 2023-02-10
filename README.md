@@ -122,9 +122,12 @@ Pulls a list of all volumes that are currently unattached and gives you their de
     python3 ebs-discover-stale-volumes.py -a True
 
         - This option will make it loop over all profiles explicitly configured in your local AWS CLI client (~/.aws/credentials)
-        - Within each profile, it will loop over all regions that account can see (meaning this could vary if some accounts have optional regions enabled)
-        - If it encounters a problem with a given profile (such as insufficient permissions), it continues on and gives an error at the end of the output
-        - It will ignore repeats of the same Account ID.  So if you have a default profile then an explicitly named profile pointing to the same account it only gets the first one
+        - Within each profile, it will loop over all regions that account can see (meaning this could vary if some accounts 
+          have optional regions enabled)
+        - If it encounters a problem with a given profile (such as insufficient permissions), it continues on and gives an 
+          error at the end of the output
+        - It will ignore repeats of the same Account ID.  So if you have a default profile then an explicitly named profile 
+          pointing to the same account it only gets the first one
 
 ![ebs-snaps](https://user-images.githubusercontent.com/112027478/201394313-691ff847-9636-4598-bd5e-97ba5c0d0a16.png)
 
