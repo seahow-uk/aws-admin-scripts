@@ -111,6 +111,8 @@ Pulls a list of all volumes that are currently unattached and gives you their de
         - Notice the all but the first one has the "-f False" parameter set, to avoid duplicating headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
 
+![image](https://user-images.githubusercontent.com/112027478/218100475-249eb3ac-8d30-4ca5-b3ab-1258d31d843c.png)
+
 **To produce the above example (all profiles and all regions):**
 
     python ebs-discover-stale-volumes.py -a True
