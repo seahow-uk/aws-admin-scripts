@@ -18,6 +18,8 @@ arguments:
     
     -a or --allprofilesallregions [True/False]
         Loop over all configured AWS CLI profiles on this local machine AND pull data from all regions (default is False)
+        Note: The script looks for profiles that point to the same account ID and will ignore all duplicates after the first
+              This is common when one has a default profile AND an explicit profile pointing to the same account
 
 prerequisites:
 
@@ -47,7 +49,6 @@ example 3 (all profiles all regions)
 
         The example above loops over all local AWS CLI profiles configured on this box AND pulls data from all regions
         Note: This can take a long time to run if you have more than a couple profiles
-
 """
 
 import boto3
@@ -124,6 +125,7 @@ def main():
         print(
             "Profile" + "," +
             "Account" + "," +
+            "Region" + "," +
             "Vol ID" + "," +
             "Vol Name" + "," +
             "Avail Zone" + "," +
@@ -134,6 +136,13 @@ def main():
             "Snaps in Archive" + "," +
             "Most Recent Snap in Archive"
         )
+
+    # set up an empty list to track account ids and errors
+    # we need to do this because there could be multiple profiles pointing to the same account
+    # this way we can track and only pull the info the first time
+
+    account_id_list = []
+    error_list = []
 
     for this_profile in profile_list:
         # Open a session and get the info for list particular profile
@@ -146,9 +155,15 @@ def main():
         try:
             STS_CLIENT = session.client('sts')
             CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
-            continue_listing = True
+            
+            # this is where we check for a duplicate account id across the profiles
+            if CURRENT_ACCOUNT_ID not in account_id_list:
+                account_id_list.append(CURRENT_ACCOUNT_ID)
+                continue_listing = True
+            else:
+                continue_listing = False
         except:
-            print("ERROR: cannot get the current Account ID from the STS service for profile " + this_profile + ".  This can be caused by a profile meant for a snow family device or insufficient permissions")
+            error_list.append("ERROR: cannot get the current Account ID from the STS service for profile " + this_profile + ".  This can be caused by a profile meant for a snow family device or insufficient permissions")
             continue_listing = False
 
         if continue_listing == True:
@@ -232,6 +247,7 @@ def main():
                         print(
                             this_profile + "," +
                             CURRENT_ACCOUNT_ID + "," +
+                            this_region + "," +
                             vol_id + "," +
                             vol_name + "," +
                             vol_az + "," + 
@@ -242,6 +258,10 @@ def main():
                             str(snaps_in_volume) + "," +
                             vol_archived
                         )
+    
+    # print out any error messages we flagged along the way
+    for this_error in error_list:
+        print(this_error)
 
 if __name__ == "__main__":
     exit(main())                        
