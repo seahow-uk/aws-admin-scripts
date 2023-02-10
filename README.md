@@ -96,20 +96,29 @@ figure out what the maintenance windows are set to across deployed rds instances
 
 ebs-discover-stale-volumes.py
 --------------------
-lists all ebs volumes in a given region that are unattached.  denotes which of those volumes have snapshot(s) in the Archive tier, and if they do the date of the most recent example of such.
+Pulls a list of all volumes that are currently unattached and gives you their details, including whether or not it has at least one snapshot in the Archive tier.  If there is more than one snapshot in the Archive tier, it will show the most recent one’s date.
 
 ![ebs-snaps](https://user-images.githubusercontent.com/112027478/201394313-691ff847-9636-4598-bd5e-97ba5c0d0a16.png)
 
-**To produce the above example (multiple regions rolled into one CSV):**
+**To produce the above example (specific regions rolled into one CSV):**
 
-    python ebs-discover-stale-volumes.py -r eu-west-1 -f True > mycsv.csv
-    python ebs-discover-stale-volumes.py -r eu-west-2 >> mycsv.csv
-    python ebs-discover-stale-volumes.py -r eu-west-3 >> mycsv.csv
-    python ebs-discover-stale-volumes.py -r eu-north-1 >> mycsv.csv
+    python ebs-discover-stale-volumes.py -r eu-west-1 > mycsv.csv
+    python ebs-discover-stale-volumes.py -r eu-west-2 -f False >> mycsv.csv
+    python ebs-discover-stale-volumes.py -r eu-west-3 -f False >> mycsv.csv
+    python ebs-discover-stale-volumes.py -r eu-north-1 -f False >> mycsv.csv
 
         - The example above puts the data for several European regions into one CSV
-        - Notice the first one has the "-f True" parameter set, which adds the column headers
+        - Notice the all but the first one has the "-f False" parameter set, to avoid duplicating headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
+
+**To produce the above example (all profiles and all regions):**
+
+    python ebs-discover-stale-volumes.py -a True
+
+        - This option will make it loop over all profiles explicitly configured in your local AWS CLI client (~/.aws/credentials)
+        - Within each profile, it will loop over all regions that account can see (meaning this could vary if some accounts have optional regions enabled)
+        - If it encounters a problem with a given profile (such as insufficient permissions), it continues on and gives an error at the end of the output
+        - It will ignore repeats of the same Account ID.  So if you have a default profile then an explicitly named profile pointing to the same account it only gets the first one
 
 ebs-snapshot-to-archive.py
 --------------------
