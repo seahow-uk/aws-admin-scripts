@@ -173,8 +173,10 @@ Courtesy of this article: https://anfcommunity.com/2020/11/20/how-to-nfs-perform
 
 **Prerequisites**
 
-    1.    fio (apt-get fio || yum install fio)
+    1.    fio (apt install fio || yum install fio)
     2.    fioparser (git clone https://github.com/jtulak/fio-parser.git)
+    3.    python2.x (apt install python2 || yum install python2 )
+    4.    numpy (pip2 install numpy)
 
 **Parameters:**
 
