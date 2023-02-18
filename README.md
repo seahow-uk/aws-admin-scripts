@@ -2,10 +2,18 @@
 
 Misc infrastructure management utilities for use with the AWS platform
 
-Authored **independently** by myself, not officially by any employer of mine, past or present.  Meant to serve as examples/starting points for further customization.  No warranty express or implied.  
+Meant to serve as examples/starting points for further customization.  No warranty express or implied.  
 
-admin-instance.yaml
---------------------
+[**[admin-instance]**](#admin-instance)&nbsp;&nbsp;&nbsp; 
+[**[al2-desktop-installer]**](#al2-desktop-installer)&nbsp;&nbsp;&nbsp; 
+[**[ec2-ssm-by-region]**](#ec2-ssm-by-region.py)&nbsp;&nbsp;&nbsp; 
+[**[ebs-discover-stale-volumes]**](#ebs-discover-stale-volumes.py)&nbsp;&nbsp;&nbsp; 
+[**[rds-maintenance-windows]**](#rds-maintenance-windows.py)&nbsp;&nbsp;&nbsp; 
+[**[ebs-discover-stale-volumes]**](#ebs-discover-stale-volumes.py)&nbsp;&nbsp;&nbsp; 
+[**[ebs-snapshot-to-archive]**](#ebs-snapshot-to-archive.py)&nbsp;&nbsp;&nbsp; 
+[**[fioparser]**](#fioparser.sh)&nbsp;&nbsp;&nbsp; 
+# **admin-instance.yaml**
+
 CloudFormation template that will spin up an Amazon Linux 2 instance with SSM and CloudWatch agents + everything needed to run these scripts.  It also creates a log group in CloudWatch and streams important logs to it.  Further, the al2-desktop-installer.sh script mentioned below will be run as part of the setup.  Refer to that section for details.
 
 **NOTE:** This repo gets cloned to /opt/aws/aws-admin-scripts .  As root, you should be able to cd to that directory and start executing scripts.
@@ -42,8 +50,8 @@ CloudFormation template that will spin up an Amazon Linux 2 instance with SSM an
     TimeZone - Select one of the TimeZones here.  
     Note: I need to expand this list.
 
-al2-desktop-installer.sh
---------------------
+# **al2-desktop-installer.sh**
+
 installs and configures MATE + VNC (plus all desktop utilities) for an EC2 instance running Amazon Linux 2 (will fail on other distros)
 
 ![image](https://user-images.githubusercontent.com/112027478/204065554-7a3b5585-87b0-4562-8c7a-c28dd8ca0ab0.png)
@@ -61,8 +69,8 @@ installs and configures MATE + VNC (plus all desktop utilities) for an EC2 insta
     example:
         ./al2-desktop-installer.sh --p 0neD1rect10nRulez2001 --r someuser
 
-ec2-ssm-by-region.py
---------------------
+# **ec2-ssm-by-region.py**
+
 track down and diagnose EC2 instances that are not properly reporting in to SSM.
 		
 ![image](https://user-images.githubusercontent.com/112027478/186730232-7a337b49-529c-4d80-af6e-1cdc6463babd.png)
@@ -78,8 +86,8 @@ track down and diagnose EC2 instances that are not properly reporting in to SSM.
         - Notice the first one has the "-f True" parameter set, which adds the column headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
 
-rds-maintenance-windows.py
---------------------
+# **rds-maintenance-windows.py**
+
 figure out what the maintenance windows are set to across deployed rds instances in both UTC and local time
 
 ![image](https://user-images.githubusercontent.com/112027478/188876917-8c506f5a-a271-4dd0-928e-fe5c96e2d758.png)
@@ -94,8 +102,8 @@ figure out what the maintenance windows are set to across deployed rds instances
         - Notice the first one has the "-f True" parameter set, which adds the column headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
 
-ebs-discover-stale-volumes.py
---------------------
+# **ebs-discover-stale-volumes.py**
+
 Pulls a list of all volumes that are currently unattached and gives you their details, including whether or not it has at least one snapshot in the Archive tier.  If there is more than one snapshot in the Archive tier, it will show the most recent one’s date.
 
 **Optional parameters:**
@@ -142,8 +150,8 @@ Pulls a list of all volumes that are currently unattached and gives you their de
         - Notice the all but the first one has the "-f False" parameter set, to avoid duplicating headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
 
-ebs-snapshot-to-archive.py
---------------------
+# **ebs-snapshot-to-archive.py**
+
 given a list of volume-ids in a file (one per line, no other characters), this will snapshot the volumes in question, wait for that to finish, then move the snapshots to the archive tier.  The idea here is you want to take one last snapshot for the record before deleting a list.
 
 ![image](https://user-images.githubusercontent.com/112027478/207862481-bde0fd32-0919-4416-8587-2987bc06bb96.png)
@@ -156,3 +164,33 @@ given a list of volume-ids in a file (one per line, no other characters), this w
         - Notice it has the -p parameter set, this means it will use the "prod" profile from ~/.aws/credentials
         - Finally, the region has to be specified unless you are operating on us-east-1
 
+# **fioparser.sh**
+
+This is a wrapper script which will run fioparser 4 times with different IO patterns.
+Courtesy of this article: https://anfcommunity.com/2020/11/20/how-to-nfs-performance-assessment-using-fio-and-fio-parser/
+
+**Prerequisites**
+
+    1.    fio (apt-get fio || yum install fio)
+    2.    fioparser (git clone https://github.com/jtulak/fio-parser.git)
+
+**Parameters:**
+
+    --w <working directory>
+        This should point to a directory on whatever volume you're wanting to test. By default it points to /ontap/working,
+        which means it expects you to have a netapp nfs volume mounted to /ontap
+
+    --o <output directory>
+        Where you want the results output to
+
+**Example:**
+
+      ./fioparser.sh -w /zfs/working -o /zfs/output
+
+      In the above example, I am testing an FSX for OpenZFS volume mounted to /zfs
+
+**Notes:**
+
+  This takes an hour to run. The part that says "for i in 1 2 3 4 ..." those numbers are talking about the IO depth. 
+  You could reduce the runtime of this to 30 min or so by capping it at 10, or 15 min by capping it at 5, but you get
+  less information about how more heavy-hitting workloads will behave
