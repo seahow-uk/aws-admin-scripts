@@ -1,18 +1,12 @@
-# aws-admin-scripts
+# **aws-admin-scripts**
 
 Misc infrastructure management utilities for use with the AWS platform
 
 Meant to serve as examples/starting points for further customization.  No warranty express or implied.  
 
-[**[admin-instance]**](#admin-instance)&nbsp;&nbsp;&nbsp; 
-[**[al2-desktop-installer]**](#al2-desktop-installer)&nbsp;&nbsp;&nbsp; 
-[**[ec2-ssm-by-region]**](#ec2-ssm-by-region.py)&nbsp;&nbsp;&nbsp; 
-[**[ebs-discover-stale-volumes]**](#ebs-discover-stale-volumes.py)&nbsp;&nbsp;&nbsp; 
-[**[rds-maintenance-windows]**](#rds-maintenance-windows.py)&nbsp;&nbsp;&nbsp; 
-[**[ebs-discover-stale-volumes]**](#ebs-discover-stale-volumes.py)&nbsp;&nbsp;&nbsp; 
-[**[ebs-snapshot-to-archive]**](#ebs-snapshot-to-archive.py)&nbsp;&nbsp;&nbsp; 
-[**[fioparser]**](#fioparser.sh)&nbsp;&nbsp;&nbsp; 
-# **admin-instance.yaml**
+[**[admin-instance]**](#admin-instanceyaml)&nbsp;&nbsp;&nbsp; [**[al2-desktop-installer]**](#al2-desktop-installersh)&nbsp;&nbsp;&nbsp; [**[ec2-ssm-by-region]**](#ec2-ssm-by-regionpy)&nbsp;&nbsp;&nbsp; [**[rds-maintenance-windows]**](#rds-maintenance-windowspy)&nbsp;&nbsp;&nbsp; [**[ebs-discover-stale-volumes]**](#ebs-discover-stale-volumespy)&nbsp;&nbsp;&nbsp; [**[ebs-snapshot-to-archive]**](#ebs-snapshot-to-archivepy)&nbsp;&nbsp;&nbsp; [**[fioparser]**](#fioparsersh)&nbsp;&nbsp;&nbsp; 
+## **admin-instance.yaml**
+[**[Back to Top]**](#aws-admin-scripts)
 
 CloudFormation template that will spin up an Amazon Linux 2 instance with SSM and CloudWatch agents + everything needed to run these scripts.  It also creates a log group in CloudWatch and streams important logs to it.  Further, the al2-desktop-installer.sh script mentioned below will be run as part of the setup.  Refer to that section for details.
 
@@ -50,7 +44,8 @@ CloudFormation template that will spin up an Amazon Linux 2 instance with SSM an
     TimeZone - Select one of the TimeZones here.  
     Note: I need to expand this list.
 
-# **al2-desktop-installer.sh**
+## **al2-desktop-installer.sh**
+[**[Back to Top]**](#aws-admin-scripts)
 
 installs and configures MATE + VNC (plus all desktop utilities) for an EC2 instance running Amazon Linux 2 (will fail on other distros)
 
@@ -69,7 +64,8 @@ installs and configures MATE + VNC (plus all desktop utilities) for an EC2 insta
     example:
         ./al2-desktop-installer.sh --p 0neD1rect10nRulez2001 --r someuser
 
-# **ec2-ssm-by-region.py**
+## **ec2-ssm-by-region.py**
+[**[Back to Top]**](#aws-admin-scripts)
 
 track down and diagnose EC2 instances that are not properly reporting in to SSM.
 		
@@ -86,7 +82,8 @@ track down and diagnose EC2 instances that are not properly reporting in to SSM.
         - Notice the first one has the "-f True" parameter set, which adds the column headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
 
-# **rds-maintenance-windows.py**
+## **rds-maintenance-windows.py**
+[**[Back to Top]**](#aws-admin-scripts)
 
 figure out what the maintenance windows are set to across deployed rds instances in both UTC and local time
 
@@ -102,7 +99,8 @@ figure out what the maintenance windows are set to across deployed rds instances
         - Notice the first one has the "-f True" parameter set, which adds the column headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
 
-# **ebs-discover-stale-volumes.py**
+## **ebs-discover-stale-volumes.py**
+[**[Back to Top]**](#aws-admin-scripts)
 
 Pulls a list of all volumes that are currently unattached and gives you their details, including whether or not it has at least one snapshot in the Archive tier.  If there is more than one snapshot in the Archive tier, it will show the most recent one’s date.
 
@@ -150,7 +148,8 @@ Pulls a list of all volumes that are currently unattached and gives you their de
         - Notice the all but the first one has the "-f False" parameter set, to avoid duplicating headers
         - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
 
-# **ebs-snapshot-to-archive.py**
+## **ebs-snapshot-to-archive.py**
+[**[Back to Top]**](#aws-admin-scripts)
 
 given a list of volume-ids in a file (one per line, no other characters), this will snapshot the volumes in question, wait for that to finish, then move the snapshots to the archive tier.  The idea here is you want to take one last snapshot for the record before deleting a list.
 
@@ -164,7 +163,8 @@ given a list of volume-ids in a file (one per line, no other characters), this w
         - Notice it has the -p parameter set, this means it will use the "prod" profile from ~/.aws/credentials
         - Finally, the region has to be specified unless you are operating on us-east-1
 
-# **fioparser.sh**
+## **fioparser.sh**
+[**[Back to Top]**](#aws-admin-scripts)
 
 This is a wrapper script which will run fioparser 4 times with different IO patterns.
 Courtesy of this article: https://anfcommunity.com/2020/11/20/how-to-nfs-performance-assessment-using-fio-and-fio-parser/
