@@ -117,7 +117,7 @@ def main():
         try:
             ec2 = session.client('ec2')
         except:
-            error_list.append("ERROR: There must be a default profile in your AWS CLI configuration")
+            print("ERROR: There must be a default profile in your AWS CLI configuration")
             exit()
 
         region_list = [region['RegionName'] for region in ec2.describe_regions()['Regions']]
