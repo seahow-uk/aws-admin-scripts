@@ -129,6 +129,9 @@ def main():
 
     ## Print the header
     print(
+        "Profile" + "," +
+        "Account" + "," +
+        "Region" + "," +
         "SSM Status" + "," +
         "SSM Computer Name" + "," +
         "SSM Resource Type" + "," +
@@ -146,7 +149,7 @@ def main():
         "EC2 Instance Profile"
     )   
 
- # set up an empty list to track account ids and errors
+    # set up an empty list to track account ids and errors
     # we need to do this because there could be multiple profiles pointing to the same account
     # this way we can track and only pull the info the first time
 
@@ -178,7 +181,7 @@ def main():
         if continue_listing == True:
             # Loop over the region_list, which is either a single specified region or all of them
 
-            for region in regions:
+            for region in region_list:
 
                 ## see: https://session.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.describe_instance_information
                 ec2 = session.resource('ec2',region_name=region)
@@ -265,6 +268,9 @@ def main():
 
                             if ssm_showme == True:
                                 print(
+                                    this_profile + "," +
+                                    CURRENT_ACCOUNT_ID + "," +
+                                    region + "," +
                                     ssm_broken + "," +
                                     ssm_computername + "," +
                                     ssm_resourcetype + "," +
@@ -285,6 +291,9 @@ def main():
                     ## this is only if there are no corresponding ssm records
                     if no_ssm_hits == True:
                         print(
+                            this_profile + "," +
+                            CURRENT_ACCOUNT_ID + "," +
+                            region + "," +
                             "SSM BROKEN" + "," +
                             "" + "," +
                             "" + "," +
@@ -301,7 +310,7 @@ def main():
                             ec2_az + "," + 
                             ec2_iam
                         )
-                        
+
     # print out any error messages we flagged along the way
     for this_error in error_list:
         print(this_error)
