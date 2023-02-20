@@ -83,8 +83,11 @@ EC2 instances.
         Note: The script looks for profiles that point to the same account ID and will ignore all duplicates after the first
               This is common when one has a default profile AND an explicit profile pointing to the same account
 
+![image](https://user-images.githubusercontent.com/112027478/220175799-dd45c0fe-d030-49de-ad1f-0452e01a4c72.png)
+
 **To produce the above example (all profiles and all regions):**	
 
+    python3 ./ec2-ssm.py -a True
 
 ## **rds-maintenance-windows.py**
 [**[Back to Top]**](#aws-admin-scripts)
