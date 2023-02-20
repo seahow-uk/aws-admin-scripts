@@ -13,6 +13,11 @@ arguments:
         Specify the AWS client profile to use - found under ~/.aws/credentials
         If you don't have multiple profiles, leave this alone
 
+    -a or --allprofilesallregions [True/False]
+        Loop over all configured AWS CLI profiles on this local machine AND pull data from all regions (default is False)
+        Note: The script looks for profiles that point to the same account ID and will ignore all duplicates after the first
+              This is common when one has a default profile AND an explicit profile pointing to the same account
+
 prerequisites:
 
     pip install boto3
@@ -73,6 +78,10 @@ def setup_args():
                         required=False,
                         action='store',
                         help='If you want to use a non-default profile')
+    parser.add_argument('-a', '--allprofilesallregions',
+                        required=False,
+                        action='store',
+                        help='If you want to loop over all local profiles and pull from all regions')
 
     return (parser.parse_args())
 
@@ -89,6 +98,12 @@ def main():
         profile = str(args.profile)
     else:
         profile = "noprofile"
+    
+    if args.allprofilesallregions:
+        allprofilesallregions = args.allprofilesallregions
+    else:
+        allprofilesallregions = False
+
 
     ## Addresses the case where user just wants to use environment variables or default profile
     if (profile == "noprofile"):
@@ -96,8 +111,21 @@ def main():
     else:
         session = boto3.Session(profile_name=profile)   
     
-    ec2 = session.client('ec2')
-    regions = [region['RegionName'] for region in ec2.describe_regions()['Regions']]
+    ## If profile is set to "all", get a list of available local profiles on this box
+    if allprofilesallregions == "True" or allprofilesallregions == "true":
+        profile_list = boto3.session.Session().available_profiles
+
+        try:
+            ec2 = session.client('ec2')
+        except:
+            print("ERROR: There must be a default profile in your AWS CLI configuration")
+            exit()
+
+        region_list = [region['RegionName'] for region in ec2.describe_regions()['Regions']]
+    else:
+        # I realize this is clunky, this is something I'm adding onsite for a specific last minute request
+        profile_list = profile.split()
+        region_list = region.split()
 
     ## Print the header
     print(
@@ -118,102 +146,154 @@ def main():
         "EC2 Instance Profile"
     )   
 
-    for region in regions:
+ # set up an empty list to track account ids and errors
+    # we need to do this because there could be multiple profiles pointing to the same account
+    # this way we can track and only pull the info the first time
 
-        ## see: https://session.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.describe_instance_information
-        ec2 = session.resource('ec2',region_name=region)
-        ec2_data = ec2.instances.all()
+    account_id_list = []
+    error_list = []
 
-        ## see: https://session.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.describe_instance_information
-        ssm = session.client('ssm',region_name=region)
-        ssm_data = ssm.describe_instance_information(
-            Filters=[
-                {
-                    'Key': 'ResourceType',
-                    'Values': [
-                        'EC2Instance',
-                    ]
-                },
-            ]
-        )
+    for this_profile in profile_list:
+        # Open a session and get the info for list particular profile
+        # UNLESS they didn't specify a profile at all in which case just use env vars or whatever they're doing
+        if this_profile == "noprofile":
+            session = boto3.Session()
+        else:
+            session = boto3.Session(profile_name=this_profile)
 
-        ## drop down a level in the JSON
-        ssm_instances=ssm_data["InstanceInformationList"]
-
-        ## loop over the list retrieved from ec2
-        for instance in ec2_data:
+        try:
+            STS_CLIENT = session.client('sts')
+            CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
             
-            # stringify instance attributes from boto3 resource
-            ec2_id = str(instance.id)
-            ec2_type = str(instance.instance_type)
-            ec2_ip = str(instance.private_ip_address)
-            ec2_pub = str(instance.public_ip_address)
-
-            # As this is a reference which could possibly be of type None, add this logic to prevent an error
-            if instance.placement is not None:
-                ec2_az = str(instance.placement["AvailabilityZone"])
+            # this is where we check for a duplicate account id across the profiles
+            if CURRENT_ACCOUNT_ID not in account_id_list:
+                account_id_list.append(CURRENT_ACCOUNT_ID)
+                continue_listing = True
             else:
-                ec2_az = "None"
+                continue_listing = False
+        except:
+            error_list.append("ERROR: cannot get the current Account ID from the STS service for profile " + this_profile + ".  This can be caused by a profile meant for a snow family device or insufficient permissions")
+            continue_listing = False
+        
+        if continue_listing == True:
+            # Loop over the region_list, which is either a single specified region or all of them
 
-            # As this is a reference which could possibly be of type None, add this logic to prevent an error
-            if instance.iam_instance_profile is not None:
-                ec2_iam = str(instance.iam_instance_profile["Arn"].split("/")[1])
-            else:
-                ec2_iam = "None"
+            for region in regions:
 
-            ## first set a marker so we can tell if there is an ec2 instance with no corresponding ssm record at all.  We will count this as broken too.
-            no_ssm_hits = True
+                ## see: https://session.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.describe_instance_information
+                ec2 = session.resource('ec2',region_name=region)
+                ec2_data = ec2.instances.all()
 
-            ## loop over the list retrieved from ssm
-            for ssm_details in ssm_instances:   
-                
-                ## if this record's ec2 instance id matches the ec2 record's, we know we are talking about the same box
-                ## is this idiomatic python?  no, but it keeps us from querying the AWS API more than once (cost savings / rate limit avoidance)
+                ## see: https://session.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.describe_instance_information
+                ssm = session.client('ssm',region_name=region)
+                ssm_data = ssm.describe_instance_information(
+                    Filters=[
+                        {
+                            'Key': 'ResourceType',
+                            'Values': [
+                                'EC2Instance',
+                            ]
+                        },
+                    ]
+                )
 
-                if (ssm_details["InstanceId"]) == instance.id:
+                ## drop down a level in the JSON
+                ssm_instances=ssm_data["InstanceInformationList"]
+
+                ## loop over the list retrieved from ec2
+                for instance in ec2_data:
                     
-                    # we found a corresponding record, so don't worry about this anymore
-                    no_ssm_hits = False
+                    # stringify instance attributes from boto3 resource
+                    ec2_id = str(instance.id)
+                    ec2_type = str(instance.instance_type)
+                    ec2_ip = str(instance.private_ip_address)
+                    ec2_pub = str(instance.public_ip_address)
 
-                    ssm_computername = str(ssm_details['ComputerName'])
-                    ssm_platformtype = str(ssm_details['PlatformType'])
-                    ssm_platformname = str(ssm_details['PlatformName'])
-                    ssm_platformversion = str(ssm_details['PlatformVersion'])
-                    ssm_ipaddress = str(ssm_details['IPAddress'])
-                    ssm_agentversion = str(ssm_details['AgentVersion'])
-                    ssm_pingstatus = str(ssm_details['PingStatus'])
-                    ssm_broken = "SSM WORKING"
-                    ssm_resourcetype = str(ssm_details['ResourceType'])
-
-                    if (broken == "False"):
-                        ## This means they want to see all records, no further thinking required 
-                        ssm_showme = True
-
-                    elif (broken == "True"):
-                        ## This means they set the arg so only broken ones show.  
-                        
-                        ## The following will detect brokenness
-                        if (ssm_pingstatus == "Inactive" or ssm_pingstatus == "Lost Connection"):
-                            ssm_showme = True
-                            ssm_broken = "SSM BROKEN"
-                        else:
-                            ssm_showme = False
+                    # As this is a reference which could possibly be of type None, add this logic to prevent an error
+                    if instance.placement is not None:
+                        ec2_az = str(instance.placement["AvailabilityZone"])
                     else:
-                        ## this means they put something odd for the broken argument
-                        print("Please put exactly True or False for the --broken argument")
-                        return
+                        ec2_az = "None"
 
-                    if ssm_showme == True:
+                    # As this is a reference which could possibly be of type None, add this logic to prevent an error
+                    if instance.iam_instance_profile is not None:
+                        ec2_iam = str(instance.iam_instance_profile["Arn"].split("/")[1])
+                    else:
+                        ec2_iam = "None"
+
+                    ## first set a marker so we can tell if there is an ec2 instance with no corresponding ssm record at all.  We will count this as broken too.
+                    no_ssm_hits = True
+
+                    ## loop over the list retrieved from ssm
+                    for ssm_details in ssm_instances:   
+                        
+                        ## if this record's ec2 instance id matches the ec2 record's, we know we are talking about the same box
+                        ## is this idiomatic python?  no, but it keeps us from querying the AWS API more than once (cost savings / rate limit avoidance)
+
+                        if (ssm_details["InstanceId"]) == instance.id:
+                            
+                            # we found a corresponding record, so don't worry about this anymore
+                            no_ssm_hits = False
+
+                            ssm_computername = str(ssm_details['ComputerName'])
+                            ssm_platformtype = str(ssm_details['PlatformType'])
+                            ssm_platformname = str(ssm_details['PlatformName'])
+                            ssm_platformversion = str(ssm_details['PlatformVersion'])
+                            ssm_ipaddress = str(ssm_details['IPAddress'])
+                            ssm_agentversion = str(ssm_details['AgentVersion'])
+                            ssm_pingstatus = str(ssm_details['PingStatus'])
+                            ssm_broken = "SSM WORKING"
+                            ssm_resourcetype = str(ssm_details['ResourceType'])
+
+                            if (broken == "False"):
+                                ## This means they want to see all records, no further thinking required 
+                                ssm_showme = True
+
+                            elif (broken == "True"):
+                                ## This means they set the arg so only broken ones show.  
+                                
+                                ## The following will detect brokenness
+                                if (ssm_pingstatus == "Inactive" or ssm_pingstatus == "Lost Connection"):
+                                    ssm_showme = True
+                                    ssm_broken = "SSM BROKEN"
+                                else:
+                                    ssm_showme = False
+                            else:
+                                ## this means they put something odd for the broken argument
+                                print("Please put exactly True or False for the --broken argument")
+                                return
+
+                            if ssm_showme == True:
+                                print(
+                                    ssm_broken + "," +
+                                    ssm_computername + "," +
+                                    ssm_resourcetype + "," +
+                                    ssm_platformtype + "," +
+                                    ssm_platformname + "," +
+                                    ssm_platformversion + "," +
+                                    ssm_agentversion + "," + 
+                                    ssm_pingstatus + "," + 
+                                    ssm_ipaddress + "," + 
+                                    ec2_ip + "," +
+                                    ec2_pub + "," +
+                                    ec2_id + "," +            
+                                    ec2_type + "," + 
+                                    ec2_az + "," + 
+                                    ec2_iam
+                                )
+                    
+                    ## this is only if there are no corresponding ssm records
+                    if no_ssm_hits == True:
                         print(
-                            ssm_broken + "," +
-                            ssm_computername + "," +
-                            ssm_resourcetype + "," +
-                            ssm_platformtype + "," +
-                            ssm_platformname + "," +
-                            ssm_platformversion + "," +
-                            ssm_agentversion + "," + 
-                            ssm_pingstatus + "," + 
-                            ssm_ipaddress + "," + 
+                            "SSM BROKEN" + "," +
+                            "" + "," +
+                            "" + "," +
+                            "" + "," +
+                            "" + "," + 
+                            "" + "," + 
+                            "" + "," + 
+                            "" + "," + 
+                            "" + "," + 
                             ec2_ip + "," +
                             ec2_pub + "," +
                             ec2_id + "," +            
@@ -221,26 +301,10 @@ def main():
                             ec2_az + "," + 
                             ec2_iam
                         )
-            
-            ## this is only if there are no corresponding ssm records
-            if no_ssm_hits == True:
-                print(
-                    "SSM BROKEN" + "," +
-                    "" + "," +
-                    "" + "," +
-                    "" + "," +
-                    "" + "," + 
-                    "" + "," + 
-                    "" + "," + 
-                    "" + "," + 
-                    "" + "," + 
-                    ec2_ip + "," +
-                    ec2_pub + "," +
-                    ec2_id + "," +            
-                    ec2_type + "," + 
-                    ec2_az + "," + 
-                    ec2_iam
-                )
+                        
+    # print out any error messages we flagged along the way
+    for this_error in error_list:
+        print(this_error)
 
 if __name__ == "__main__":
     exit(main())                        
