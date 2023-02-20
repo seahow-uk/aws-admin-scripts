@@ -5,9 +5,6 @@ sean@tanagra.uk
 Jan 2023
 
 arguments:
-    
-    -b or --broken [True/False]
-        ONLY return instances where SSM isn't able to see the agent at present
 
     -p or --profile [String]
         Specify the AWS client profile to use - found under ~/.aws/credentials
@@ -29,9 +26,9 @@ examples:
 
         Lists all instances in all regions for the default profile
 
-    python3 ec2-ssm.py --broken True --profile seahow1
+    python3 ec2-ssm.py --profile seahow1
 
-        Lists only instances with an SSM status of BROKEN for a profile named "seahow1"
+        Lists only instances for a profile named "seahow1"
 
 notes:
     For an instance to be considered working by this script, the following must be ALL true:
@@ -69,11 +66,6 @@ def setup_args():
     parser = argparse.ArgumentParser(
         description='Optional arguments')
 
-    parser.add_argument('-b', '--broken',
-                        required=False,
-                        action='store',
-                        help='ONLY show broken SSM agents')
-
     parser.add_argument('-p', '--profile',
                         required=False,
                         action='store',
@@ -87,12 +79,6 @@ def setup_args():
 
 def main():
     args = setup_args()
-
-    if args.broken:
-        broken = args.broken
-    else:
-        ## change this to True if you want to only see broken SSM agents by default
-        broken = "False"
 
     if args.profile:
         profile = str(args.profile)
@@ -247,47 +233,32 @@ def main():
                             ssm_pingstatus = str(ssm_details['PingStatus'])
                             ssm_broken = "SSM WORKING"
                             ssm_resourcetype = str(ssm_details['ResourceType'])
-
-                            if (broken == "False"):
-                                ## This means they want to see all records, no further thinking required 
-                                ssm_showme = True
-
-                            elif (broken == "True"):
-                                ## This means they set the arg so only broken ones show.  
-                                
-                                ## The following will detect brokenness
-                                if (ssm_pingstatus == "Inactive" or ssm_pingstatus == "Lost Connection"):
-                                    ssm_showme = True
-                                    ssm_broken = "SSM BROKEN"
-                                else:
-                                    ssm_showme = False
-                            else:
-                                ## this means they put something odd for the broken argument
-                                print("Please put exactly True or False for the --broken argument")
-                                return
-
-                            if ssm_showme == True:
-                                print(
-                                    this_profile + "," +
-                                    CURRENT_ACCOUNT_ID + "," +
-                                    region + "," +
-                                    ssm_broken + "," +
-                                    ssm_computername + "," +
-                                    ssm_resourcetype + "," +
-                                    ssm_platformtype + "," +
-                                    ssm_platformname + "," +
-                                    ssm_platformversion + "," +
-                                    ssm_agentversion + "," + 
-                                    ssm_pingstatus + "," + 
-                                    ssm_ipaddress + "," + 
-                                    ec2_ip + "," +
-                                    ec2_pub + "," +
-                                    ec2_id + "," +            
-                                    ec2_type + "," + 
-                                    ec2_az + "," + 
-                                    ec2_iam
-                                )
-                    
+                              
+                            ## The following will detect brokenness
+                            if (ssm_pingstatus == "Inactive" or ssm_pingstatus == "Lost Connection"):
+                                ssm_broken = "SSM BROKEN"
+   
+                            print(
+                                this_profile + "," +
+                                CURRENT_ACCOUNT_ID + "," +
+                                region + "," +
+                                ssm_broken + "," +
+                                ssm_computername + "," +
+                                ssm_resourcetype + "," +
+                                ssm_platformtype + "," +
+                                ssm_platformname + "," +
+                                ssm_platformversion + "," +
+                                ssm_agentversion + "," + 
+                                ssm_pingstatus + "," + 
+                                ssm_ipaddress + "," + 
+                                ec2_ip + "," +
+                                ec2_pub + "," +
+                                ec2_id + "," +            
+                                ec2_type + "," + 
+                                ec2_az + "," + 
+                                ec2_iam
+                            )
+                
                     ## this is only if there are no corresponding ssm records
                     if no_ssm_hits == True:
                         print(
