@@ -103,8 +103,10 @@ def main():
     print(
         "SSM Status" + "," +
         "SSM Computer Name" + "," +
+        "SSM Resource Type" + "," +
         "SSM Platform" + "," +
         "SSM OS Name" + "," + 
+        "SSM OS Version" + "," +
         "SSM Agent" + "," + 
         "SSM Ping" + "," + 
         "SSM IP Address" + "," +
@@ -176,10 +178,12 @@ def main():
                     ssm_computername = str(ssm_details['ComputerName'])
                     ssm_platformtype = str(ssm_details['PlatformType'])
                     ssm_platformname = str(ssm_details['PlatformName'])
+                    ssm_platformversion = str(ssm_details['PlatformVersion'])
                     ssm_ipaddress = str(ssm_details['IPAddress'])
                     ssm_agentversion = str(ssm_details['AgentVersion'])
                     ssm_pingstatus = str(ssm_details['PingStatus'])
                     ssm_broken = "SSM WORKING"
+                    ssm_resourcetype = str(ssm_details['ResourceType'])
 
                     if (broken == "False"):
                         ## This means they want to see all records, no further thinking required 
@@ -203,8 +207,10 @@ def main():
                         print(
                             ssm_broken + "," +
                             ssm_computername + "," +
+                            ssm_resourcetype + "," +
                             ssm_platformtype + "," +
                             ssm_platformname + "," +
+                            ssm_platformversion + "," +
                             ssm_agentversion + "," + 
                             ssm_pingstatus + "," + 
                             ssm_ipaddress + "," + 
@@ -223,6 +229,8 @@ def main():
                     "" + "," +
                     "" + "," +
                     "" + "," +
+                    "" + "," + 
+                    "" + "," + 
                     "" + "," + 
                     "" + "," + 
                     "" + "," + 

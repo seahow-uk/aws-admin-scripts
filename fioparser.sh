@@ -11,7 +11,7 @@
 # 1.    fio (apt install fio || yum install fio)
 # 2.    fioparser (git clone https://github.com/jtulak/fio-parser.git)
 # 3.    python2.x (apt install python2 || yum install python2 )
-# 4.    numpy (pip2 install numpy)
+# 4.    numpy, hurry (pip2 install numpy && pip2 install hurry)
 
 # OPTIONS:
 
@@ -23,7 +23,7 @@
 #       Where you want the results output to
 
 # EXAMPLE:
-#       ./fioparser.sh -w /zfs/working -o /zfs/output
+#       ./fioparser.sh --w /zfs/working --o /zfs/output
 
 #       In the above example, I am testing an FSX for OpenZFS volume mounted to /zfs
 

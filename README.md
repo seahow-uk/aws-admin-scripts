@@ -189,7 +189,7 @@ Courtesy of this article: https://anfcommunity.com/2020/11/20/how-to-nfs-perform
 
 **Example:**
 
-      ./fioparser.sh -w /zfs/working -o /zfs/output
+      ./fioparser.sh --w /zfs/working --o /zfs/output
 
       In the above example, I am testing an FSX for OpenZFS volume mounted to /zfs
 

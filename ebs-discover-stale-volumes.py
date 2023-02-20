@@ -113,7 +113,13 @@ def main():
     ## If profile is set to "all", get a list of available local profiles on this box
     if allprofilesallregions == "True" or allprofilesallregions == "true":
         profile_list = boto3.session.Session().available_profiles
-        ec2 = session.client('ec2')
+
+        try:
+            ec2 = session.client('ec2')
+        except:
+            error_list.append("ERROR: There must be a default profile in your AWS CLI configuration")
+            exit()
+
         region_list = [region['RegionName'] for region in ec2.describe_regions()['Regions']]
     else:
         # I realize this is clunky, this is something I'm adding onsite for a specific last minute request
