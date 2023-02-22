@@ -5,9 +5,6 @@ sean@tanagra.uk
 Jan 2023
 
 arguments:
-    
-    -b or --broken [True/False]
-        ONLY return instances where SSM isn't able to see the agent at present
 
     -p or --profile [String]
         Specify the AWS client profile to use - found under ~/.aws/credentials
@@ -29,9 +26,9 @@ examples:
 
         Lists all instances in all regions for the default profile
 
-    python3 ec2-ssm.py --broken True --profile seahow1
+    python3 ec2-ssm.py --profile seahow1
 
-        Lists only instances with an SSM status of BROKEN for a profile named "seahow1"
+        Lists only instances for a profile named "seahow1"
 
 notes:
     For an instance to be considered working by this script, the following must be ALL true:
@@ -69,11 +66,6 @@ def setup_args():
     parser = argparse.ArgumentParser(
         description='Optional arguments')
 
-    parser.add_argument('-b', '--broken',
-                        required=False,
-                        action='store',
-                        help='ONLY show broken SSM agents')
-
     parser.add_argument('-p', '--profile',
                         required=False,
                         action='store',
@@ -87,12 +79,6 @@ def setup_args():
  
 def main():
     args = setup_args()
-
-    if args.broken:
-        broken = args.broken
-    else:
-        ## change this to True if you want to only see broken SSM agents by default
-        broken = "False"
 
     if args.profile:
         profile = str(args.profile)

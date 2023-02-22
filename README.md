@@ -4,7 +4,7 @@ Misc infrastructure management utilities for use with the AWS platform
 
 Meant to serve as examples/starting points for further customization.  No warranty express or implied.  
 
-[**[rds-maintenance-windows]**](#rds-maintenance-windowspy)&nbsp;&nbsp;&nbsp; [**[admin-instance]**](#admin-instanceyaml)&nbsp;&nbsp;&nbsp; [**[al2-desktop-installer]**](#al2-desktop-installersh)&nbsp;&nbsp;&nbsp; [**[ec2-ssm-by-region]**](#ec2-ssm-by-regionpy)&nbsp;&nbsp;&nbsp; 
+[**[rds-maintenance-windows]**](#rds-maintenance-windowspy)&nbsp;&nbsp;&nbsp; [**[admin-instance]**](#admin-instanceyaml)&nbsp;&nbsp;&nbsp; [**[al2-desktop-installer]**](#al2-desktop-installersh)&nbsp;&nbsp;&nbsp; [**[ec2-ssm]**](#ec2-ssmpy)&nbsp;&nbsp;&nbsp; 
 
 [**[ebs-discover-stale-volumes]**](#ebs-discover-stale-volumespy)&nbsp;&nbsp;&nbsp; [**[ebs-snapshot-to-archive]**](#ebs-snapshot-to-archivepy)&nbsp;&nbsp;&nbsp; [**[fioparser]**](#fioparsersh)&nbsp;&nbsp;&nbsp; 
 ## **admin-instance.yaml**
@@ -66,28 +66,33 @@ installs and configures MATE + VNC (plus all desktop utilities) for an EC2 insta
     example:
         ./al2-desktop-installer.sh --p 0neD1rect10nRulez2001 --r someuser
 
-## **ec2-ssm-by-region.py**
+## **ec2-ssm.py**
 [**[Back to Top]**](#aws-admin-scripts)
 
-track down and diagnose EC2 instances that are not properly reporting in to SSM.
-		
-![image](https://user-images.githubusercontent.com/112027478/186730232-7a337b49-529c-4d80-af6e-1cdc6463babd.png)
+A report that merges information from SSM with EC2 data to help diagnose when SSM is broken for one or more
+EC2 instances.
 
-**To produce the above example (multiple regions rolled into one CSV):**
+**Optional parameters:**
 
-    python3 ec2-instances-in-ssm-by-region.py -r eu-west-1 -f True > mycsv.csv
-    python3 ec2-instances-in-ssm-by-region.py -r eu-west-2 >> mycsv.csv
-    python3 ec2-instances-in-ssm-by-region.py -r eu-west-3 >> mycsv.csv
-    python3 ec2-instances-in-ssm-by-region.py -r eu-north-1 >> mycsv.csv
+    -p or --profile [String]
+        Specify the AWS client profile to use - found under ~/.aws/credentials
+        only use this if you want to limit it to a single profile/account
+    
+    -a or --allprofilesallregions [True/False]
+        Loop over all configured AWS CLI profiles on this local machine AND pull data from all regions (default is False)
+        Note: The script looks for profiles that point to the same account ID and will ignore all duplicates after the first
+              This is common when one has a default profile AND an explicit profile pointing to the same account
 
-        - The example above puts the data for several European regions into one CSV
-        - Notice the first one has the "-f True" parameter set, which adds the column headers
-        - It also uses a single > whereas the subsequent ones use >> to redirect output to the file
+![image](https://user-images.githubusercontent.com/112027478/220175799-dd45c0fe-d030-49de-ad1f-0452e01a4c72.png)
+
+**To produce the above example (all profiles and all regions):**	
+
+    python3 ./ec2-ssm.py -a True
 
 ## **rds-maintenance-windows.py**
 [**[Back to Top]**](#aws-admin-scripts)
 
-figure out what the maintenance windows are set to across deployed rds instances in both UTC and local time
+Figure out what the maintenance windows are set to across deployed rds instances in both UTC and local time
 
 ![image](https://user-images.githubusercontent.com/112027478/188876917-8c506f5a-a271-4dd0-928e-fe5c96e2d758.png)
 
