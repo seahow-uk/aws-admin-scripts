@@ -1,5 +1,4 @@
-mycsv.csv
-test.py
-test-2.py
-output.csv
-output2.csv
+*.csv
+test*
+
+

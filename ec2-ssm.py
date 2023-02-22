@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 """
-sean@tanagra.uk
+https://github.com/seahow-uk/aws-admin-scripts
 Jan 2023
 
 arguments:

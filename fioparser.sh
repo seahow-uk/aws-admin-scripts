@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# sean@tanagra.uk
+# https://github.com/seahow-uk/aws-admin-scripts
 # Fed 2023
 #
 # This is a wrapper script which will run fioparser 4 times with different IO patterns.
