@@ -83,8 +83,8 @@ def setup_args():
                         action='store',
                         help='If you want to loop over all local profiles and pull from all regions')
 
-    return (parser.parse_args())
-
+    return (parser.parse_args()) 
+ 
 def main():
     args = setup_args()
 
@@ -270,7 +270,7 @@ def main():
                             ssm_agentversion = str(ssm_details['AgentVersion'])
                             ssm_pingstatus = str(ssm_details['PingStatus'])
                             ssm_broken = "SSM WORKING"
-                            ssm_broken_reason = "NO ISSUE"
+                            ssm_broken_reason = "NONE"
                             ssm_resourcetype = str(ssm_details['ResourceType'])
 
                             if (broken == "False"):
