@@ -75,8 +75,8 @@ def setup_args():
                         action='store',
                         help='If you want to loop over all local profiles and pull from all regions')
 
-    return (parser.parse_args())
-
+    return (parser.parse_args()) 
+ 
 def main():
     args = setup_args()
 
@@ -119,6 +119,7 @@ def main():
         "Account" + "," +
         "Region" + "," +
         "SSM Status" + "," +
+        "SSM Status Reason" + "," +
         "SSM Computer Name" + "," +
         "SSM Resource Type" + "," +
         "SSM Platform" + "," +
@@ -132,7 +133,8 @@ def main():
         "EC2 Instance Id" + "," +            
         "EC2 Instance Type" + "," + 
         "EC2 Avail Zone" + "," +
-        "EC2 Instance Profile"
+        "EC2 Instance Profile" + "," +
+        "EC2 Instance State"
     )   
 
     # set up an empty list to track account ids and errors
@@ -175,20 +177,41 @@ def main():
 
                 ## see: https://session.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.describe_instance_information
                 ssm = session.client('ssm',region_name=region)
-                ssm_data = ssm.describe_instance_information(
-                    Filters=[
-                        {
-                            'Key': 'ResourceType',
-                            'Values': [
-                                'EC2Instance',
-                            ]
-                        },
-                    ]
-                )
+                ssm_instances=[]
+                nextToken=""
+                while True:
+                    if nextToken == "":
+                        ssm_data = ssm.describe_instance_information(
+                            Filters=[
+                                {
+                                    'Key': 'ResourceType',
+                                    'Values': [
+                                        'EC2Instance',
+                                ]
+                                },
+                            ],
+                            MaxResults=5
+                        )
+                    else:
+                        ssm_data = ssm.describe_instance_information(
+                            Filters=[
+                                {
+                                    'Key': 'ResourceType',
+                                    'Values': [
+                                        'EC2Instance',
+                                ]
+                                },
+                            ],
+                            MaxResults=5,
+                            NextToken=nextToken
+                        )
 
-                ## drop down a level in the JSON
-                ssm_instances=ssm_data["InstanceInformationList"]
-
+                    ssm_instances += ssm_data["InstanceInformationList"]
+                    try:
+                        nextToken = ssm_data["NextToken"]
+                    except KeyError as error:
+                        break
+                    
                 ## loop over the list retrieved from ec2
                 for instance in ec2_data:
                     
@@ -197,6 +220,7 @@ def main():
                     ec2_type = str(instance.instance_type)
                     ec2_ip = str(instance.private_ip_address)
                     ec2_pub = str(instance.public_ip_address)
+                    ec2_state = str(instance.state["Name"])
 
                     # As this is a reference which could possibly be of type None, add this logic to prevent an error
                     if instance.placement is not None:
@@ -232,33 +256,53 @@ def main():
                             ssm_agentversion = str(ssm_details['AgentVersion'])
                             ssm_pingstatus = str(ssm_details['PingStatus'])
                             ssm_broken = "SSM WORKING"
+                            ssm_broken_reason = "NONE"
                             ssm_resourcetype = str(ssm_details['ResourceType'])
-                              
-                            ## The following will detect brokenness
-                            if (ssm_pingstatus == "Inactive" or ssm_pingstatus == "Lost Connection"):
-                                ssm_broken = "SSM BROKEN"
-   
-                            print(
-                                this_profile + "," +
-                                CURRENT_ACCOUNT_ID + "," +
-                                region + "," +
-                                ssm_broken + "," +
-                                ssm_computername + "," +
-                                ssm_resourcetype + "," +
-                                ssm_platformtype + "," +
-                                ssm_platformname + "," +
-                                ssm_platformversion + "," +
-                                ssm_agentversion + "," + 
-                                ssm_pingstatus + "," + 
-                                ssm_ipaddress + "," + 
-                                ec2_ip + "," +
-                                ec2_pub + "," +
-                                ec2_id + "," +            
-                                ec2_type + "," + 
-                                ec2_az + "," + 
-                                ec2_iam
-                            )
-                
+
+                            if (broken == "False"):
+                                ## This means they want to see all records, no further thinking required 
+                                ssm_showme = True
+
+                            elif (broken == "True"):
+                                ## This means they set the arg so only broken ones show.  
+                                
+                                ## The following will detect brokenness
+                                if (ssm_pingstatus == "Inactive" or ssm_pingstatus == "Lost Connection"):
+                                    ssm_showme = True
+                                    ssm_broken = "SSM BROKEN"
+                                    ssm_broken_reason = "PING LOST"
+                                else:
+                                    ssm_showme = False
+                            else:
+                                ## this means they put something odd for the broken argument
+                                print("Please put exactly True or False for the --broken argument")
+                                return
+
+                            if ssm_showme == True:
+                                print(
+                                    this_profile + "," +
+                                    CURRENT_ACCOUNT_ID + "," +
+                                    region + "," +
+                                    ssm_broken + "," +
+                                    ssm_broken_reason + "," +
+                                    ssm_computername + "," +
+                                    ssm_resourcetype + "," +
+                                    ssm_platformtype + "," +
+                                    ssm_platformname + "," +
+                                    ssm_platformversion + "," +
+                                    ssm_agentversion + "," + 
+                                    ssm_pingstatus + "," + 
+                                    ssm_ipaddress + "," + 
+                                    ec2_ip + "," +
+                                    ec2_pub + "," +
+                                    ec2_id + "," +            
+                                    ec2_type + "," + 
+                                    ec2_az + "," + 
+                                    ec2_iam + "," +
+                                    ec2_state
+                                )
+                            next
+                    
                     ## this is only if there are no corresponding ssm records
                     if no_ssm_hits == True:
                         print(
@@ -266,6 +310,7 @@ def main():
                             CURRENT_ACCOUNT_ID + "," +
                             region + "," +
                             "SSM BROKEN" + "," +
+                            "NO SSM RECORD" + "," +
                             "" + "," +
                             "" + "," +
                             "" + "," +
@@ -279,7 +324,8 @@ def main():
                             ec2_id + "," +            
                             ec2_type + "," + 
                             ec2_az + "," + 
-                            ec2_iam
+                            ec2_iam + "," +
+                            ec2_state
                         )
 
     # print out any error messages we flagged along the way
