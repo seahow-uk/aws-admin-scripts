@@ -15,7 +15,7 @@ Prerequisites:
 
     1.  awscliv2 
 
-        NOTE: awscli v1 will not work as it cannot do "aws sso login"
+        NOTE: awscli v1 will not work as it cannot do "aws configure sso-session"
 
         - newer fedora-derived distributions should already have or be able to yum install v2 via EPEL repo
 
@@ -31,15 +31,24 @@ Prerequisites:
 
         pip install boto3
 
-Example:
+Procedure:
 
-    aws sso configure
-        <this will ask you some questions like your SSO start URL>
+    1.  aws configure sso-session
 
-    aws sso login
-        <this will dialog you through logging in>
-        
-    python3 ./sso-auth.py
+        a.  NOT "aws configure sso"
+        b.  walk through the dialog
+
+    2.  aws sso login
+
+        a.  walk through the dialog and choose the MPA
+
+    3.  python3 ./sso-auth.py 
+    
+        a.  **ONLY IF** your SSO user is attached to a role named "AdministratorAccess" - this is the default
+
+        b.  In the event your role is named something different you must use the "-r <rolename>" parameter like so:
+
+            python3 ./sso-auth.py -r MySpecialAWSAdminRoleName
 
 **NOTE** 
 
@@ -51,6 +60,18 @@ import boto3
 import os
 from stat import *
 import json
+import argparse
+
+def setup_args():
+    parser = argparse.ArgumentParser(
+        description='Optional arguments')
+
+    parser.add_argument('-r', '--role',
+                        required=False,
+                        action='store',
+                        help='Name of the Role')
+
+    return (parser.parse_args()) 
 
 def getAccessToken():
   dir = os.path.expanduser('~/.aws/sso/cache')
@@ -73,7 +94,7 @@ def getAccessToken():
   return jobj['accessToken']
 
 def main():
-  defaultRole = 'AWSAdministratorAccess'
+  defaultRole = 'AdministratorAccess'
 
   accessToken = getAccessToken() 
 
