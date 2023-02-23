@@ -10,7 +10,17 @@ arguments:
         AWS region to use (default is us-east-1)
 
     -f or --filename [full path the file]
-        file that is a list of ebs volume-ids you want to snapshot to archive
+        CSV with the following fields:
+
+        vol-id: the id of the AWS EBS volume you would like to snapshot
+        account-id: the AWS account id that the aforementioned volume lives in
+        notes: anything you'd like to add as a note which will be appended as a tag to the snapshot
+
+        example of a properly formatted CSV:
+        
+            vol-9679d0752f6d4177e,751615044823,This volume was unattached on 2023-01-23 11:01:20 UTC
+            vol-96e69013a141d75c2,751615044823,This volume is from an old database
+            vol-92f7a074c936739f9,457137834884,Unknown volume
 
     -p or --profile [String]
         Specify the AWS client profile to use - found under ~/.aws/credentials
@@ -20,15 +30,23 @@ arguments:
         Loop over all configured AWS CLI profiles on this local machine AND pull data from all regions (default is False)
         Note: The script looks for profiles that point to the same account ID and will ignore all duplicates after the first
               This is common when one has a default profile AND an explicit profile pointing to the same account
+        
+        You do not need to specify the region or profile if you use this option
 
 prerequisites:
 
     pip install boto3
     pip install argparse
 
-example:
+examples:
 
-    python ebs-snapshot-to-archive.py -r eu-west-1 -f ./myebsvolumes.txt
+    Running against a specific region with the default profile
+
+        python3 ebs-snapshot-to-archive.py -r eu-west-1 -f ./myebsvolumes.csv
+    
+    Running against all regions and all accounts configured in your local AWS CLI
+
+        python3 ebs-snapshot-to-archive.py -a True -f ./myebsvolumes.csv
 
 """
 
