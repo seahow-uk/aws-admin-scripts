@@ -160,15 +160,47 @@ Pulls a list of all volumes that are currently unattached and gives you their de
 
 given a list of volume-ids in a file (one per line, no other characters), this will snapshot the volumes in question, wait for that to finish, then move the snapshots to the archive tier.  The idea here is you want to take one last snapshot for the record before deleting a list.
 
+**Prerequisites**
+
+    pip3 install boto3
+    pip3 install argparse
+    pip3 install csv
+
+**Optional parameters:**
+
+    -r or --region [String]
+        AWS region to use (default is us-east-1)
+
+    -f or --filename [full path the file]
+        CSV with the following fields:
+
+        vol-id: the id of the AWS EBS volume you would like to snapshot
+        account-id: the AWS account id that the aforementioned volume lives in
+        region: the AWS region name that the volume lives in
+        notes: anything you'd like to add as a note which will be appended as a tag to the snapshot
+
+        Be sure to quote the notes field unless its a very simple string
+
+        example of a properly formatted CSV:
+        
+            vol-9679d0752f6d4177e,751615044823,us-east-1,"This volume was unattached on 2023-01-23 11:01:20 UTC"
+            vol-96e69013a141d75c2,751615044823,eu-west-1,"This volume is from an old database"
+            vol-92f7a074c936739f9,457137834884,us-east-1,"Unknown volume"
+
+    -p or --profile [String]
+        Specify the AWS client profile to use - found under ~/.aws/credentials
+        If you don't have multiple profiles, leave this alone
+    
+    -a or --allprofilesallregions [True/False]
+        Loop over all configured AWS CLI profiles on this local machine and hit all regions in the CSV
+        
+        You do not need to specify the region with -r or a profile with -p if you use this option
+
 ![image](https://user-images.githubusercontent.com/112027478/207862481-bde0fd32-0919-4416-8587-2987bc06bb96.png)
 
 **To produce the above example:**
 
-    python3 ebs-snapshot-to-archive.py -f ./my-volume-list.txt -p prod -r eu-west-1
-
-        - The example above reads a file called my-volume-list.txt in the current directory
-        - Notice it has the -p parameter set, this means it will use the "prod" profile from ~/.aws/credentials
-        - Finally, the region has to be specified unless you are operating on us-east-1
+    python3 ebs-snapshot-to-archive.py -a True -f ./testvol.csv 
 
 ## **fioparser.sh**
 [**[Back to Top]**](#aws-admin-scripts)
