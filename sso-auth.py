@@ -37,7 +37,7 @@ Procedure:
 
         a.  walk through the dialog
 
-    2.  aws sso login
+    2.  aws sso login --sso-session <SSO session name from step 1>
 
         a.  walk through the dialog and choose the MPA
 
