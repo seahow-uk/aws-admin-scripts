@@ -111,7 +111,9 @@ def main():
       defaultPath = os.path.expanduser('~/.aws')
     else:
       defaultPath = ""
-  
+  else:
+    defaultPath = ""
+    
   credentialsFile = os.path.join(defaultPath, 'credentials')
   configFile = os.path.join(defaultPath, 'config')
 
