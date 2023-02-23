@@ -204,7 +204,7 @@ def main():
                                 ]
                                 },
                             ],
-                            MaxResults=5
+                            MaxResults=50
                         )
                     else:
                         ssm_data = ssm.describe_instance_information(
@@ -216,7 +216,7 @@ def main():
                                 ]
                                 },
                             ],
-                            MaxResults=5,
+                            MaxResults=50,
                             NextToken=nextToken
                         )
 
@@ -262,17 +262,51 @@ def main():
                             # we found a corresponding record, so don't worry about this anymore
                             no_ssm_hits = False
 
-                            ssm_computername = str(ssm_details['ComputerName'])
-                            ssm_platformtype = str(ssm_details['PlatformType'])
-                            ssm_platformname = str(ssm_details['PlatformName'])
-                            ssm_platformversion = str(ssm_details['PlatformVersion'])
-                            ssm_ipaddress = str(ssm_details['IPAddress'])
-                            ssm_agentversion = str(ssm_details['AgentVersion'])
-                            ssm_pingstatus = str(ssm_details['PingStatus'])
+                            try:
+                                ssm_computername = str(ssm_details['ComputerName'])
+                            except KeyError as error:
+                                ssm_computername = ""
+
+                            try: 
+                                ssm_platformtype = str(ssm_details['PlatformType'])
+                            except KeyError as error:
+                                ssm_platformtype = ""
+
+                            try: 
+                                ssm_platformname = str(ssm_details['PlatformName'])
+                            except KeyError as error:
+                                ssm_platformname = ""
+
+                            try: 
+                                ssm_platformversion = str(ssm_details['PlatformVersion'])
+                            except KeyError as error:
+                                ssm_platformversion = ""
+
+                            try: 
+                                ssm_ipaddress = str(ssm_details['IPAddress'])
+                            except KeyError as error:
+                                ssm_ipaddress = ""
+
+                            try: 
+                                ssm_agentversion = str(ssm_details['AgentVersion'])
+                            except KeyError as error:
+                                ssm_agentversion = ""
+
+                            try: 
+                            
+                                ssm_pingstatus = str(ssm_details['PingStatus'])
+                            except KeyError as error:
+                                ssm_pingstatus = ""
+
+                            
+                            try: 
+                                ssm_resourcetype = str(ssm_details['ResourceType'])
+                            except KeyError as error:
+                                ssm_resourcetype = ""
+                            
                             ssm_broken = "SSM WORKING"
                             ssm_broken_reason = "NONE"
-                            ssm_resourcetype = str(ssm_details['ResourceType'])
-
+                            
                             if (broken == "False"):
                                 ## This means they want to see all records, no further thinking required 
                                 ssm_showme = True
