@@ -42,13 +42,12 @@ Procedure:
 
         a.  walk through the dialog and choose the MPA
 
-    3.  python3 ./sso-auth.py -d <role you want to default to>
+    3.  python3 ./sso-auth.py -d <role you want to default to> -r <your SSO region>
     
-        a.  This is here because you might have several roles and we need to know which one
+        a.  defaultrole: This is here because you might have several roles and we need to know which one
             to use to make temp creds fore in the AWS CLI config
 
-        b.  There is a -r <region> parameter you can use if for some reason eu-west-1 endpoint
-            is unreachable, but since this is a global service, the region shouldn't matter
+        b.  region: You need to specify the region your SSO service is set up in
 
 **NOTE** 
 
@@ -72,7 +71,7 @@ def setup_args():
                         help='Name of the default Role')
     
     parser.add_argument('-r', '--region',
-                        required=False,
+                        required=True,
                         action='store',
                         help='Name of the Region')
 
@@ -102,11 +101,7 @@ def main():
   args = setup_args()
 
   defaultRole = args.defaultrole
-  
-  if (args.region):
-    defaultRegion = args.region
-  else:
-    defaultRegion = "eu-west-1"
+  defaultRegion = args.region
 
   accessToken = getAccessToken() 
 
