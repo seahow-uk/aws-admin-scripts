@@ -16,11 +16,13 @@ arguments:
         account-id: the AWS account id that the aforementioned volume lives in
         notes: anything you'd like to add as a note which will be appended as a tag to the snapshot
 
+        Be sure to quote the notes field unless its a very simple string
+
         example of a properly formatted CSV:
         
-            vol-9679d0752f6d4177e,751615044823,This volume was unattached on 2023-01-23 11:01:20 UTC
-            vol-96e69013a141d75c2,751615044823,This volume is from an old database
-            vol-92f7a074c936739f9,457137834884,Unknown volume
+            vol-9679d0752f6d4177e,751615044823,"This volume was unattached on 2023-01-23 11:01:20 UTC"
+            vol-96e69013a141d75c2,751615044823,"This volume is from an old database"
+            vol-92f7a074c936739f9,457137834884,"Unknown volume"
 
     -p or --profile [String]
         Specify the AWS client profile to use - found under ~/.aws/credentials
@@ -128,10 +130,10 @@ def main():
         profile_list = profile.split()
         region_list = region.split()
    
-    rawdata = readData(filename)
-    newData = removeBlankLines(rawdata)
-    csvData = splitLines(newData)
-    print(csvData)
+    file = open(filename, "r")
+    csvReader = csv.reader( file,  delimiter=",", quotechar='"')
+    for row in csvReader:
+        print(row)
 
     # ## loop through each volume and retrieve its snapshots
     # for line in Lines:
