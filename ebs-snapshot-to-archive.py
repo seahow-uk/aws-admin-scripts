@@ -132,14 +132,48 @@ def main():
    
     file = open(filename, "r")
     csvReader = csv.reader( file,  delimiter=",", quotechar='"')
+
+    # set up empty lists to track account ids and errors
+    account_id_list = []
+    error_list = []
+    csv_account_id_list = []
+
+    # get the unique account ids from the CSV
     for row in csvReader:
-        this_volume_id = row[0]
-        this_account_id = row[1]
-        this_notes = row[2]
+        if (row[1] not in csv_account_id_list):
+            csv_account_id_list.append(row[1])
+
+    # get the unique account ids from the local profiles, i.e. what they actually have access to
+    for this_profile in profile_list:
+        # Open a session and get the info for list particular profile
+        # UNLESS they didn't specify a profile at all in which case just use env vars or whatever they're doing
+        if this_profile == "noprofile":
+            session = boto3.Session()
+        else:
+            session = boto3.Session(profile_name=this_profile)
+
+        try:
+            STS_CLIENT = session.client('sts')
+            CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
+            
+            # this is where we check for a duplicate account id across the profiles
+            if CURRENT_ACCOUNT_ID not in account_id_list:
+                account_id_list.append(CURRENT_ACCOUNT_ID)
+                continue_listing = True
+            else:
+                continue_listing = False
+        except:
+            error_list.append("ERROR: cannot get the current Account ID from the STS service for profile " + this_profile + ".  This can be caused by a profile meant for a snow family device or insufficient permissions")
+            continue_listing = False
     
-        print("account id:" + this_account_id)
-        print("volume id:" + this_volume_id)
-        print("notes:" + this_notes)
+        if continue_listing == False:
+            for this_error in error_list:
+                print(this_error)
+            sys.exit()
+    
+    print(csv_account_id_list)
+    print("--")
+    print(account_id_list)
 
     # ## loop through each volume and retrieve its snapshots
     # for line in Lines:
