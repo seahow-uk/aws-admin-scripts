@@ -187,7 +187,7 @@ def main():
 
         # ok, so let's loop over the csv_region_list which should be much narrower than all possible regions
         for this_region in csv_region_list:
-            print(this_region)
+
             # open an ec2 resource and ec2 client for this specific profile and region within it
             this_ec2_resource = this_session.resource('ec2',region_name=this_region)
             this_ec2_client = this_session.client('ec2',region_name=this_region)
