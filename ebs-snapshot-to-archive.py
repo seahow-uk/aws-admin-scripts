@@ -133,9 +133,8 @@ def main():
     file = open(filename, "r")
     csvReader = csv.reader( file,  delimiter=",", quotechar='"')
 
-    # set up empty lists to track account ids and errors
-    account_id_list = []
-    error_list = []
+    # set up empty data structures to track account ids and errors
+    profile_dict = {}
     csv_account_id_list = []
 
     # get the unique account ids from the CSV
@@ -156,24 +155,20 @@ def main():
             STS_CLIENT = session.client('sts')
             CURRENT_ACCOUNT_ID = STS_CLIENT.get_caller_identity()['Account']
             
-            # this is where we check for a duplicate account id across the profiles
-            if CURRENT_ACCOUNT_ID not in account_id_list:
-                account_id_list.append(CURRENT_ACCOUNT_ID)
-                continue_listing = True
-            else:
-                continue_listing = False
+            if CURRENT_ACCOUNT_ID not in profile_dict:
+                profile_dict[CURRENT_ACCOUNT_ID] = this_profile
+
         except:
-            error_list.append("ERROR: cannot get the current Account ID from the STS service for profile " + this_profile + ".  This can be caused by a profile meant for a snow family device or insufficient permissions")
-            continue_listing = False
-    
-        if continue_listing == False:
-            for this_error in error_list:
-                print(this_error)
+            print("ERROR: cannot get the current Account ID from the STS service for profile " + this_profile + ".  This can be caused by a profile meant for a snow family device or insufficient permissions")
             sys.exit()
-    
-    print(csv_account_id_list)
-    print("--")
-    print(account_id_list)
+
+    # validate that they do, in fact, have a local profile with credentials for every account id in their CSV
+    for this_account in csv_account_id_list:
+        if (this_account not in profile_dict):
+            print("ERROR: account " + this_account + " which is listed in your CSV does not have a matching local profile/credentials in your AWS CLI configuration")
+            sys.exit()
+
+    print(profile_dict)
 
     # ## loop through each volume and retrieve its snapshots
     # for line in Lines:
