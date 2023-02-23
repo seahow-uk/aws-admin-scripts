@@ -205,8 +205,6 @@ def main():
                 ## set up how we want our dates formatted
                 date_format_str = '%B %Y'
 
-
-
                 ## loop over the list retrieved from ec2
                 for volume in vol_data:
 
