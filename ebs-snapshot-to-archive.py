@@ -213,7 +213,7 @@ def main():
                     # now, only bother if the volume is in the region we're in
                     if this_volumes_region == this_region:
                         print("creating snapshot for: ",this_volumes_id,this_volumes_account,this_volumes_region,this_volumes_notes + "...(waiting)...")
-                        snapshot_name = ("archive of " + this_volumes_id + " created " + utc_date_time)
+                        
 
                         # by default we'll assume a volume has no name
                         this_volume_name = "unnamed"
@@ -230,6 +230,8 @@ def main():
                         # get more info about the volume to add to tags in the snapshot
                         # the idea here is you would delete the volume so this is needed
                         # if you ever end up wondering what an archive snapshot is
+
+                        snapshot_name = ("archive of " + this_volume_name + " created " + utc_date_time)
 
                         this_volume_type = str(this_volumes_data.volume_type)
                         this_volume_az = str(this_volumes_data.availability_zone)
@@ -248,6 +250,10 @@ def main():
                                                 'Key': 'Name',
                                                 'Value': snapshot_name
                                             },
+                                            {
+                                                'Key': 'Volume Name',
+                                                'Value': this_volume_name
+                                            },                                            
                                             {
                                                 'Key': 'Volume Type',
                                                 'Value': this_volume_type
