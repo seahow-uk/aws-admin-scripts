@@ -148,12 +148,12 @@ def main():
     
     creds = sso.get_role_credentials( roleName=defaultRole, accountId=a['accountId'], accessToken=accessToken)
 
-    with open('config','a',encoding='utf-8') as f:
+    with open(configFile,'a',encoding='utf-8') as f:
       f.write( f"[profile {a['accountName']}]\n")
       f.write( f"output=json\n")
       f.write( f"region=eu-west-1\n\n")
 
-    with open('credentials', 'a', encoding='utf-8') as f:
+    with open(credentialsFile, 'a', encoding='utf-8') as f:
       f.write( f"[{a['accountName']}]\n")
       f.write( f"aws_access_key_id={creds['roleCredentials']['accessKeyId']}\n")
       f.write( f"aws_secret_access_key={creds['roleCredentials']['secretAccessKey']}\n")
