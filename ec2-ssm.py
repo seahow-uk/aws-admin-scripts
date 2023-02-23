@@ -25,7 +25,7 @@ prerequisites:
 
 examples:
 
-    python3 ec2-ssm.py
+    python3 ec2-ssm.py -a
 
         Lists all instances in all regions for the default profile
 
