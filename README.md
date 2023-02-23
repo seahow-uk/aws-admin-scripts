@@ -24,7 +24,8 @@ CloudFormation template that will spin up an Amazon Linux 2 instance with SSM an
 
     SecurityGroup - Select a Security Group you would like to attach to this instance
 
-    InstanceProfile - An IAM Role that has permissions to send messages to EC2, post CloudWatch Metrics, and communicate with SSM
+    InstanceProfile - An IAM Role that has permissions to send messages to EC2, 
+                      post CloudWatch Metrics, and communicate with SSM
 
     Note: Also included in this repo is a file called admin-instance-role-policy.json.  
     This is an example policy which can be used to create an IAM Role with appropriate permissions.
