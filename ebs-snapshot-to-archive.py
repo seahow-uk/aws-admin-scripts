@@ -185,7 +185,7 @@ def main():
     print(volume_dict)
 
     # loop over each profile again, this time from the known good dictionary
-    for this_profile,this_account in profile_dict.items():
+    for this_account,this_profile in profile_dict.items():
         print(this_profile)
         this_session = boto3.Session(profile_name=this_profile)
 
