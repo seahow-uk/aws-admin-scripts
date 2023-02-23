@@ -58,6 +58,7 @@ import boto3
 import argparse
 import sys
 import csv
+from datetime import datetime
 
 def setup_args():
     parser = argparse.ArgumentParser(
@@ -131,7 +132,12 @@ def main():
     error_list = []
     volume_dict = {}
     csv_region_list = []
-    output_dict = {}
+    snapshot_dict = {}
+    archived_dict = {}
+
+    # set up constants
+    utc_date_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    date_format_str = '%Y-%m-%d %H:%M:%S'
 
     # get info out of the CSV
     for row in csvReader:
@@ -206,56 +212,108 @@ def main():
 
                     # now, only bother if the volume is in the region we're in
                     if this_volumes_region == this_region:
-                        print(this_volumes_id,this_volumes_account,this_volumes_region,this_volumes_notes)
+                        print("creating snapshot for: ",this_volumes_id,this_volumes_account,this_volumes_region,this_volumes_notes + "...(waiting)...")
+                        snapshot_name = ("archive of " + this_volumes_id + " created " + utc_date_time)
 
-    # ## loop through each volume and retrieve its snapshots
-    # for line in Lines:
-    #     count += 1
-    #     volume_id_list.append(line.strip())
+                        # by default we'll assume a volume has no name
+                        this_volume_name = "unnamed"
+
+                        # try to get the volume name here
+                        
+                        this_volumes_data = this_ec2_resource.Volume(this_volumes_id)
+
+                        if this_volumes_data.tags:
+                            for t in this_volumes_data.tags:
+                                if t["Key"] == 'Name':
+                                    this_volume_name = t["Value"]  
+
+                        # get more info about the volume to add to tags in the snapshot
+                        # the idea here is you would delete the volume so this is needed
+                        # if you ever end up wondering what an archive snapshot is
+
+                        this_volume_type = str(this_volumes_data.volume_type)
+                        this_volume_az = str(this_volumes_data.availability_zone)
+                        this_volume_size = str(this_volumes_data.size)
+                        this_volume_encrypted = str(this_volumes_data.encrypted)
+                        this_volume_created = str(this_volumes_data.create_time.strftime(date_format_str))
+
+                        try:
+                            this_snapshot = this_ec2_resource.create_snapshot(
+                                VolumeId=this_volumes_id,
+                                TagSpecifications=[
+                                    {
+                                        'ResourceType': 'snapshot',
+                                        'Tags': [
+                                            {
+                                                'Key': 'Name',
+                                                'Value': snapshot_name
+                                            },
+                                            {
+                                                'Key': 'Volume Type',
+                                                'Value': this_volume_type
+                                            },
+                                            {
+                                                'Key': 'Volume AZ',
+                                                'Value': this_volume_az
+                                            },
+                                            {
+                                                'Key': 'Volume Size',
+                                                'Value': this_volume_size
+                                            },
+                                            {
+                                                'Key': 'Volume Encrypted',
+                                                'Value': this_volume_encrypted
+                                            },
+                                            {
+                                                'Key': 'Volume Created',
+                                                'Value': this_volume_created
+                                            },
+                                            {
+                                                'Key': 'Notes',
+                                                'Value': this_volumes_notes
+                                            },
+                                        ]
+                                    },
+                                ]
+                            )
+                            this_snapshot.wait_until_completed()
+                            print ("snapshot " + this_snapshot.snapshot_id + " complete.")
+                            # this is where we will store information about snapshots that were successful
+                            snapshot_dict[this_snapshot.snapshot_id] = [this_volumes_id, this_volumes_account, this_volumes_region, this_volumes_notes]
+                        except:
+                            error_list.append("ERROR: Initial snapshot of volume " + this_volumes_id + " failed")
     
-    # volume_list_file.close()
+            # loop over snapshots in this account and region to try and tier them down to archive
+            for this_snapshots_id,this_snapshots_list in snapshot_dict.items():
 
-    # print ("number of volumes we need to snapshot:" + str(len(volume_id_list)))
+                this_snapshots_volume_id = this_snapshots_list[0]
+                this_snapshots_account = this_snapshots_list[1]
+                this_snapshots_region = this_snapshots_list[2]
+                this_snapshots_notes = this_snapshots_list[2]
+                
+                try:
+                    this_ec2_client.modify_snapshot_tier(
+                        SnapshotId=this_snapshots_id,
+                        StorageTier='archive'
+                    )
+                    print ("initiating archive of: ",this_snapshots_id,this_snapshots_volume_id,this_snapshots_account,this_snapshots_region,this_snapshots_notes)
+                    archived_dict[this_snapshots_id] = [this_snapshots_id,this_snapshots_volume_id,this_snapshots_account,this_snapshots_region,this_snapshots_notes]
+                except:
+                    error_list.append("ERROR: Archival of snapshot " + this_snapshots_id + " failed")
 
-    # volume_id_list = []
-    # snapshot_id_list = []
+    print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
+    print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
 
-    # count = 0
-    # for vol in volume_id_list:
-    #     count += 1
-    #     snapname = ("Archival Snapshot of " + vol)
-    #     ## we need to use ec2resource here because it has the ability to wait
-    #     snapshot = ec2resource.create_snapshot(
-    #         VolumeId=vol,
-    #         TagSpecifications=[
-    #             {
-    #                 'ResourceType': 'snapshot',
-    #                 'Tags': [
-    #                     {
-    #                         'Key': 'Name',
-    #                         'Value': snapname
-    #                     },
-    #                 ]
-    #             },
-    #         ]
-    #     )
-    #     print ("creating snapshot for volume: " + vol)
-    #     snapshot.wait_until_completed()
-    #     print ("snapshot " + snapshot.snapshot_id + " complete.")
-    #     snapshot_id_list.append(snapshot.snapshot_id)
+    # write the output to a file for troubleshooting
 
-    # count = 0
-    # for snap in snapshot_id_list:
-    #     count += 1
-    #     ## we need to use ec2client here because it has the ability to modify the snapshot tier
-    #     snapshot = ec2client.modify_snapshot_tier(
-    #         SnapshotId=snap,
-    #         StorageTier='archive'
-    #     )
-    #     print ("initiating archive of snapshot: " + snap)
+    archive_file = 'archived_snapshots_output.csv'
 
-    # print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
-    # print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
+    with open(archive_file, 'w', encoding='utf-8') as f:
+        f.write("")
+
+    for this_snapshots_id,this_snapshots_list in archived_dict.items():
+        with open(archive_file,'a',encoding='utf-8') as f:
+            f.write( f"{this_snapshots_list}\n")
 
 if __name__ == "__main__":
     exit(main())                        
