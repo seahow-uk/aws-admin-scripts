@@ -186,10 +186,12 @@ def main():
 
     # loop over each profile again, this time from the known good dictionary
     for this_profile,this_account in profile_dict.items():
+        print(this_profile)
         this_session = boto3.Session(profile_name=this_profile)
 
         # ok, so let's loop over the csv_region_list which should be much narrower than all possible regions
         for this_region in csv_region_list:
+            print(this_region)
             # open an ec2 resource and ec2 client for this specific profile and region within it
             this_ec2_resource = this_session.resource('ec2',region_name=this_region)
             this_ec2_client = this_session.client('ec2',region_name=this_region)
@@ -199,8 +201,10 @@ def main():
             # volume_id : ['account_id', 'region', 'notes'] 
 
             for this_volumes_id,this_volumes_account,this_volumes_region,this_volumes_notes in volume_dict.items():
+                print(this_volumes_id)
                 # first off, only bother with volumes tied to the account we're in
                 if this_volumes_account == this_account:
+                    print(this_account)
                     # now, only bother if the volume is in the region we're in
                     if this_volumes_region == this_region:
                         print(this_volumes_id,this_volumes_account,this_volumes_region,this_volumes_notes)
