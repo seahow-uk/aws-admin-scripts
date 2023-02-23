@@ -128,15 +128,16 @@ def main():
     # set up empty data structures to track stuff
     profile_dict = {}
     csv_account_id_list = []
-    csv_region_list = []
-    csv_volume_dict = {}
+    csv_volume_to_account_dict = {}
+    csv_volume_to_region_dict = {}
+    csv_volume_to_notes_dict = {}
 
     # get the unique account ids from the CSV
     for row in csvReader:
         if (row[1] not in csv_account_id_list):
             csv_account_id_list.append(row[1])
-        if (row[0] not in csv_volume_dict):
-            csv_volume_dict[row[0]] = row[2]
+        if (row[0] not in csv_volume_to_region_dict):
+            csv_volume_to_region_dict[row[0]] = row[2]
 
     # get the unique account ids from the local profiles, i.e. what they actually have access to
     for this_profile in profile_list:
@@ -166,8 +167,9 @@ def main():
             sys.exit()
 
     print(profile_dict)
-    print(csv_volume_dict)
-
+    print(csv_volume_to_account_dict)
+    print(csv_volume_to_region_dict)
+    print(csv_volume_to_notes_dict)
 
     # ## loop through each volume and retrieve its snapshots
     # for line in Lines:
