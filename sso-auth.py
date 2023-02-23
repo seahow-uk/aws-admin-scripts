@@ -145,8 +145,8 @@ def main():
 
     print(roles)
     if defaultRole not in roles:
-      print(f"Not assigned a role named {defaultRole} in {a['accountName']}")
-      next
+      print(f"Not assigned a role named {defaultRole} in {a['accountName']} - skipping")
+      continue
     
     creds = sso.get_role_credentials( roleName=defaultRole, accountId=a['accountId'], accessToken=accessToken)
 
