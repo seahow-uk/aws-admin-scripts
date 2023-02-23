@@ -21,9 +21,9 @@ arguments:
 
         example of a properly formatted CSV:
         
-            vol-9679d0752f6d4177e,751615044823,"This volume was unattached on 2023-01-23 11:01:20 UTC"
-            vol-96e69013a141d75c2,751615044823,"This volume is from an old database"
-            vol-92f7a074c936739f9,457137834884,"Unknown volume"
+            vol-9679d0752f6d4177e,751615044823,us-east-1,"This volume was unattached on 2023-01-23 11:01:20 UTC"
+            vol-96e69013a141d75c2,751615044823,eu-west-1,"This volume is from an old database"
+            vol-92f7a074c936739f9,457137834884,us-east-1,"Unknown volume"
 
     -p or --profile [String]
         Specify the AWS client profile to use - found under ~/.aws/credentials
