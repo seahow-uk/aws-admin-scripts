@@ -210,6 +210,8 @@ Courtesy of this article: https://anfcommunity.com/2020/11/20/how-to-nfs-perform
 This script will use your AWS IAM Identity Center (Successor to AWS Single Sign-On) account to generate temporary
 credentials within your local AWS CLI client as well as set up matching profiles. 
 
+NOTE: The first profile it injects will be the default profile. Subsequent profiles will be formatted as a(account name)
+
 This is useful when you need to run other scripts in this repo across dozens of accounts in an Organization as:
     
     1.  it saves you the manual effort of creating all the profiles
