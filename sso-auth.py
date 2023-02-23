@@ -61,7 +61,7 @@ import argparse
 
 def setup_args():
     parser = argparse.ArgumentParser(
-        description='Optional arguments')
+        description='Arguments')
 
     parser.add_argument('-d', '--defaultrole',
                         required=True,
