@@ -118,14 +118,19 @@ def main():
         try:
             ec2 = session.client('ec2')
         except:
-            print("ERROR: There must be a default profile in your AWS CLI configuration")
+            print("ERROR: There must be a default profile in your AWS CLI configuration to use the -a option, or you must specify a profile with the -p option")
             exit()
 
         region_list = [region['RegionName'] for region in ec2.describe_regions()['Regions']]
     else:
         # I realize this is clunky, this is something I'm adding onsite for a specific last minute request
-        profile_list = profile.split()
-        region_list = region.split()
+
+        try:
+            profile_list = profile.split()
+            region_list = region.split()
+        except:
+            print("ERROR: There must be a default profile in your AWS CLI configuration to use the -a option, or you must specify a profile with the -p option")
+            exit()
 
     ## Print the header
     print(
