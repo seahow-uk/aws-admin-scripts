@@ -203,7 +203,7 @@ def main():
                 if this_volumes_account == this_account:
                     # now, only bother if the volume is in the region we're in
                     if this_volumes_region == this_region:
-                        
+                        print(this_volumes_id,this_volumes_account,this_volumes_region,this_volumes_notes)
 
     # ## loop through each volume and retrieve its snapshots
     # for line in Lines:
