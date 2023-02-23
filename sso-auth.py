@@ -131,6 +131,7 @@ def main():
   with open(configFile, 'w', encoding='utf-8') as f:
     f.write("")
     
+  firstAccount = 1
 
   for a in accounts:
     print(a)
@@ -147,13 +148,18 @@ def main():
     
     creds = sso.get_role_credentials( roleName=defaultRole, accountId=a['accountId'], accessToken=accessToken)
 
+    if firstAccount == 1:
+      profileName = 'default'
+    else:
+      profileName = a['accountName']
+
     with open(configFile,'a',encoding='utf-8') as f:
-      f.write( f"[profile {a['accountName']}]\n")
+      f.write( f"[profile {profileName}]\n")
       f.write( f"output=json\n")
       f.write( f"region=eu-west-1\n\n")
 
     with open(credentialsFile, 'a', encoding='utf-8') as f:
-      f.write( f"[{a['accountName']}]\n")
+      f.write( f"[{profileName}]\n")
       f.write( f"aws_access_key_id={creds['roleCredentials']['accessKeyId']}\n")
       f.write( f"aws_secret_access_key={creds['roleCredentials']['secretAccessKey']}\n")
       f.write( f"aws_session_token={creds['roleCredentials']['sessionToken']}\n\n")

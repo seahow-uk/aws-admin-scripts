@@ -6,7 +6,7 @@ Meant to serve as examples/starting points for further customization.  No warran
 
 [**[rds-maintenance-windows]**](#rds-maintenance-windowspy)&nbsp;&nbsp;&nbsp; [**[admin-instance]**](#admin-instanceyaml)&nbsp;&nbsp;&nbsp; [**[al2-desktop-installer]**](#al2-desktop-installersh)&nbsp;&nbsp;&nbsp; [**[ec2-ssm]**](#ec2-ssmpy)&nbsp;&nbsp;&nbsp; 
 
-[**[ebs-discover-stale-volumes]**](#ebs-discover-stale-volumespy)&nbsp;&nbsp;&nbsp; [**[ebs-snapshot-to-archive]**](#ebs-snapshot-to-archivepy)&nbsp;&nbsp;&nbsp; [**[fioparser]**](#fioparsersh)&nbsp;&nbsp;&nbsp; 
+[**[ebs-discover-stale-volumes]**](#ebs-discover-stale-volumespy)&nbsp;&nbsp;&nbsp; [**[ebs-snapshot-to-archive]**](#ebs-snapshot-to-archivepy)&nbsp;&nbsp;&nbsp; [**[fioparser]**](#fioparsersh)&nbsp;&nbsp;&nbsp; [**[sso-auth]**](#sso-authpy)&nbsp;&nbsp;&nbsp; 
 ## **admin-instance.yaml**
 [**[Back to Top]**](#aws-admin-scripts)
 
@@ -215,13 +215,13 @@ This is useful when you need to run other scripts in this repo across dozens of 
     1.  it saves you the manual effort of creating all the profiles
     2.  it improves security by not saving permanent credentials to local files
 
-Prerequisites: 
+**Prerequisites:**
 
     1.  awscliv2 
             NOTE: awscli v1 will not work as it cannot do "aws configure sso-session"      
     2.  boto3
 
-Required Parameters:
+**Required Parameters:**
 
     -r or --region [String]
         AWS region to use
@@ -229,14 +229,14 @@ Required Parameters:
     -d or --defaultrole [String]
         SSO default role to use
 
-Optional Parameters:
+**Optional Parameters:**
 
     -o or --overwrite [True/False]
-        script will OVERWRITE your _~/.aws/config_ and _~/.aws/credentials_ files
+        script will OVERWRITE your ~/.aws/config and ~/.aws/credentials files
         
-        if you do not use this option, the _config_ and _credentials_ files will appear in the local directory
+        if you do not use this option, the config and credentials files will appear in the local directory
 
-Procedure to use:
+**Procedure to use:**
 
     1.  aws configure sso-session
         (walk through the dialog)
