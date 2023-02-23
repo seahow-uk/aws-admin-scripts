@@ -180,13 +180,9 @@ def main():
         if (this_account not in profile_dict):
             error_list.append("ERROR: account " + this_account + " which is listed in your CSV does not have a matching local profile/credentials in your AWS CLI configuration")
 
-    print(profile_dict)
-    print("---")
-    print(volume_dict)
-
     # loop over each profile again, this time from the known good dictionary
     for this_account,this_profile in profile_dict.items():
-        print(this_profile)
+
         this_session = boto3.Session(profile_name=this_profile)
 
         # ok, so let's loop over the csv_region_list which should be much narrower than all possible regions
@@ -200,11 +196,14 @@ def main():
             # remember volume_dict looks like this
             # volume_id : ['account_id', 'region', 'notes'] 
 
-            for this_volumes_id,this_volumes_account,this_volumes_region,this_volumes_notes in volume_dict.items():
-                print(this_volumes_id)
+            for this_volumes_id,this_volumes_list in volume_dict.items():
+
+                this_volumes_account = this_volumes_list[0]
+                this_volumes_region = this_volumes_list[1]
+                this_volumes_notes = this_volumes_list[2]
                 # first off, only bother with volumes tied to the account we're in
                 if this_volumes_account == this_account:
-                    print(this_account)
+
                     # now, only bother if the volume is in the region we're in
                     if this_volumes_region == this_region:
                         print(this_volumes_id,this_volumes_account,this_volumes_region,this_volumes_notes)
