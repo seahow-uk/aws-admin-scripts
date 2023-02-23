@@ -162,7 +162,7 @@ def main():
             sys.exit()
 
     print(profile_dict)
-
+    print(csvReader)
 
 
     # ## loop through each volume and retrieve its snapshots
