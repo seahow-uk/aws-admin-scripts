@@ -133,7 +133,13 @@ def main():
     file = open(filename, "r")
     csvReader = csv.reader( file,  delimiter=",", quotechar='"')
     for row in csvReader:
-        print(row)
+        this_volume_id = row[0]
+        this_account_id = row[1]
+        this_notes = row[2]
+    
+        print("account id:" + this_account_id)
+        print("volume id:" + this_volume_id)
+        print("notes:" + this_notes)
 
     # ## loop through each volume and retrieve its snapshots
     # for line in Lines:
