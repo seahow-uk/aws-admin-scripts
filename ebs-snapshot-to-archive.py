@@ -15,6 +15,11 @@ arguments:
     -p or --profile [String]
         Specify the AWS client profile to use - found under ~/.aws/credentials
         If you don't have multiple profiles, leave this alone
+    
+    -a or --allprofilesallregions [True/False]
+        Loop over all configured AWS CLI profiles on this local machine AND pull data from all regions (default is False)
+        Note: The script looks for profiles that point to the same account ID and will ignore all duplicates after the first
+              This is common when one has a default profile AND an explicit profile pointing to the same account
 
 prerequisites:
 
@@ -51,7 +56,7 @@ def setup_args():
                         required=False,
                         action='store',
                         help='If you want to use a non-default profile')
-    
+
     parser.add_argument('-a', '--allprofilesallregions',
                         required=False,
                         action='store',
@@ -78,68 +83,108 @@ def main():
     else:
         profile = "noprofile"
 
+    if args.allprofilesallregions:
+        allprofilesallregions = args.allprofilesallregions
+    else:
+        allprofilesallregions = False
+
     ## Addresses the case where user just wants to use environment variables or default profile
     if (profile == "noprofile"):
         session = boto3.Session()
     else:
-        session = boto3.Session(profile_name=profile)   
+        session = boto3.Session(profile_name=profile)
 
-    # Using readlines() to get the ebs volume-id list
-    volume_list_file = open(filename, "r")
-    Lines = volume_list_file.readlines()
-    count = 0
+    ## If profile is set to "all", get a list of available local profiles on this box
+    if allprofilesallregions == "True" or allprofilesallregions == "true":
+        profile_list = boto3.session.Session().available_profiles
 
-    ec2client = session.client('ec2',region_name=region)
-    ec2resource = session.resource('ec2',region_name=region)
+        try:
+            ec2 = session.client('ec2')
+        except:
+            print("ERROR: There must be a default profile in your AWS CLI configuration")
+            exit()
+
+        region_list = [region['RegionName'] for region in ec2.describe_regions()['Regions']]
+    else:
+        # I realize this is clunky, this is something I'm adding onsite for a specific last minute request
+        profile_list = profile.split()
+        region_list = region.split()
+   
+    rawdata = readData(filename)
+    newData = removeBlankLines(rawdata)
+    csvData = splitLines(newData)
+    print(csvData)
+
+    # ## loop through each volume and retrieve its snapshots
+    # for line in Lines:
+    #     count += 1
+    #     volume_id_list.append(line.strip())
     
-    volume_id_list = []
-    snapshot_id_list = []
+    # volume_list_file.close()
 
-    ## loop through each volume and retrieve its snapshots
-    for line in Lines:
-        count += 1
-        volume_id_list.append(line.strip())
-    
-    volume_list_file.close()
+    # print ("number of volumes we need to snapshot:" + str(len(volume_id_list)))
 
-    print ("number of volumes we need to snapshot:" + str(len(volume_id_list)))
+    # volume_id_list = []
+    # snapshot_id_list = []
+    # ec2client = session.client('ec2',region_name=region)
+    # ec2resource = session.resource('ec2',region_name=region)
+    # count = 0
+    # for vol in volume_id_list:
+    #     count += 1
+    #     snapname = ("Archival Snapshot of " + vol)
+    #     ## we need to use ec2resource here because it has the ability to wait
+    #     snapshot = ec2resource.create_snapshot(
+    #         VolumeId=vol,
+    #         TagSpecifications=[
+    #             {
+    #                 'ResourceType': 'snapshot',
+    #                 'Tags': [
+    #                     {
+    #                         'Key': 'Name',
+    #                         'Value': snapname
+    #                     },
+    #                 ]
+    #             },
+    #         ]
+    #     )
+    #     print ("creating snapshot for volume: " + vol)
+    #     snapshot.wait_until_completed()
+    #     print ("snapshot " + snapshot.snapshot_id + " complete.")
+    #     snapshot_id_list.append(snapshot.snapshot_id)
 
-    count = 0
-    for vol in volume_id_list:
-        count += 1
-        snapname = ("Archival Snapshot of " + vol)
-        ## we need to use ec2resource here because it has the ability to wait
-        snapshot = ec2resource.create_snapshot(
-            VolumeId=vol,
-            TagSpecifications=[
-                {
-                    'ResourceType': 'snapshot',
-                    'Tags': [
-                        {
-                            'Key': 'Name',
-                            'Value': snapname
-                        },
-                    ]
-                },
-            ]
-        )
-        print ("creating snapshot for volume: " + vol)
-        snapshot.wait_until_completed()
-        print ("snapshot " + snapshot.snapshot_id + " complete.")
-        snapshot_id_list.append(snapshot.snapshot_id)
+    # count = 0
+    # for snap in snapshot_id_list:
+    #     count += 1
+    #     ## we need to use ec2client here because it has the ability to modify the snapshot tier
+    #     snapshot = ec2client.modify_snapshot_tier(
+    #         SnapshotId=snap,
+    #         StorageTier='archive'
+    #     )
+    #     print ("initiating archive of snapshot: " + snap)
 
-    count = 0
-    for snap in snapshot_id_list:
-        count += 1
-        ## we need to use ec2client here because it has the ability to modify the snapshot tier
-        snapshot = ec2client.modify_snapshot_tier(
-            SnapshotId=snap,
-            StorageTier='archive'
-        )
-        print ("initiating archive of snapshot: " + snap)
+    # print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
+    # print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
 
-    print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
-    print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
+def splitLines(data):
+   newLines = []
+   for line in data:
+       myList = line.split(",")
+       newLines.append(myList)
+   return(newLines)
+
+def removeBlankLines(data):
+   goodLines = []
+   for thisLine in data:
+       thisLine = thisLine.rstrip()
+       if len(thisLine) != 0:
+           goodLines.append(thisLine)
+   return(goodLines)
+
+def readData(fileName):
+   f = open(fileName, "r")
+   data = f.readlines()
+   f.close()
+   return data
 
 if __name__ == "__main__":
     exit(main())                        
