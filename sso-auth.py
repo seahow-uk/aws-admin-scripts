@@ -150,6 +150,7 @@ def main():
 
     if firstAccount == 1:
       profileName = 'default'
+      firstAccount == 0
     else:
       profileName = a['accountName']
 
