@@ -42,13 +42,13 @@ Procedure:
 
         a.  walk through the dialog and choose the MPA
 
-    3.  python3 ./sso-auth.py 
+    3.  python3 ./sso-auth.py -d <role you want to default to>
     
-        a.  **ONLY IF** your SSO user is attached to a role named "AdministratorAccess" - this is the default
+        a.  This is here because you might have several roles and we need to know which one
+            to use to make temp creds fore in the AWS CLI config
 
-        b.  In the event your role is named something different you must use the "-r <rolename>" parameter like so:
-
-            python3 ./sso-auth.py -r MySpecialAWSAdminRoleName
+        b.  There is a -r <region> parameter you can use if for some reason eu-west-1 endpoint
+            is unreachable, but since this is a global service, the region shouldn't matter
 
 **NOTE** 
 
@@ -66,10 +66,15 @@ def setup_args():
     parser = argparse.ArgumentParser(
         description='Optional arguments')
 
-    parser.add_argument('-r', '--role',
+    parser.add_argument('-d', '--defaultrole',
+                        required=True,
+                        action='store',
+                        help='Name of the default Role')
+    
+    parser.add_argument('-r', '--region',
                         required=False,
                         action='store',
-                        help='Name of the Role')
+                        help='Name of the Region')
 
     return (parser.parse_args()) 
 
@@ -94,14 +99,23 @@ def getAccessToken():
   return jobj['accessToken']
 
 def main():
-  defaultRole = 'AdministratorAccess'
+  args = setup_args()
+
+  defaultRole = args.defaultrole
+  
+  if (args.region):
+    defaultRegion = args.region
+  else:
+    defaultRegion = "eu-west-1"
 
   accessToken = getAccessToken() 
 
   if (accessToken == None):
     exit( "Unable to get accounts; no access token")
 
-  sso = boto3.client('sso')
+  session = boto3.Session(region_name=defaultRegion)
+  sso = session.client('sso')
+
   accounts = sso.list_accounts(maxResults=1000,accessToken=accessToken)['accountList']
   
   with open('config', 'w', encoding='utf-8') as f:
