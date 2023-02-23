@@ -117,18 +117,9 @@ def main():
     ## If profile is set to "all", get a list of available local profiles on this box
     if allprofilesallregions == "True" or allprofilesallregions == "true":
         profile_list = boto3.session.Session().available_profiles
-
-        try:
-            ec2 = session.client('ec2')
-        except:
-            print("ERROR: There must be a default profile in your AWS CLI configuration")
-            exit()
-
-        region_list = [region['RegionName'] for region in ec2.describe_regions()['Regions']]
     else:
-        # I realize this is clunky, this is something I'm adding onsite for a specific last minute request
+        # if we're not doing that, we'll just have a single entry list
         profile_list = profile.split()
-        region_list = region.split()
    
     file = open(filename, "r")
     csvReader = csv.reader( file,  delimiter=",", quotechar='"')
