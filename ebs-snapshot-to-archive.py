@@ -135,6 +135,7 @@ def main():
 
     # get the unique account ids from the local profiles, i.e. what they actually have access to
     for this_profile in profile_list:
+        print("profile:" + this_profile)
         # Open a session and get the info for list particular profile
         # UNLESS they didn't specify a profile at all in which case just use env vars or whatever they're doing
         if this_profile == "noprofile":
