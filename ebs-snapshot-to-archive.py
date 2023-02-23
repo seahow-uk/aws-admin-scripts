@@ -128,10 +128,14 @@ def main():
     # set up empty data structures to track stuff
     profile_dict = {}
     csv_account_id_list = []
+    error_list = []
     volume_dict = {}
+    csv_region_list = []
+    output_dict = {}
 
-    # get the unique account ids from the CSV
+    # get info out of the CSV
     for row in csvReader:
+
         if (row[1] not in csv_account_id_list):
             csv_account_id_list.append(row[1])
         
@@ -143,6 +147,13 @@ def main():
             new_notes = row[3]
 
             volume_dict[new_volume] = [new_account, new_region, new_notes]
+        
+        if (row[2] not in csv_region_list):
+            csv_region_list.append(row[2])
+
+    # in the special case that they are specifying one region we will just create a single region list here    
+    if allprofilesallregions == "False":
+        csv_region_list = [region]
 
     # get the unique account ids from the local profiles, i.e. what they actually have access to
     for this_profile in profile_list:
@@ -162,21 +173,37 @@ def main():
                 profile_dict[CURRENT_ACCOUNT_ID] = this_profile
 
         except:
-            print("ERROR: cannot get the current Account ID from the STS service for profile " + this_profile + ".  This can be caused by a profile meant for a snow family device or insufficient permissions")
-            sys.exit()
+            error_list.append("ERROR: cannot get the current Account ID from the STS service for profile " + this_profile + ".  This can be caused by a profile meant for a snow family device or insufficient permissions")
 
     # validate that they do, in fact, have a local profile with credentials for every account id in their CSV
     for this_account in csv_account_id_list:
         if (this_account not in profile_dict):
-            print("ERROR: account " + this_account + " which is listed in your CSV does not have a matching local profile/credentials in your AWS CLI configuration")
-            sys.exit()
+            error_list.append("ERROR: account " + this_account + " which is listed in your CSV does not have a matching local profile/credentials in your AWS CLI configuration")
 
     print(profile_dict)
     print("---")
     print(volume_dict)
 
+    # loop over each profile again, this time from the known good dictionary
+    for this_profile,this_account in profile_dict.items():
+        this_session = boto3.Session(profile_name=this_profile)
 
-    # volume_id : ['profile', 'account_id', 'notes'] 
+        # ok, so let's loop over the csv_region_list which should be much narrower than all possible regions
+        for this_region in csv_region_list:
+            # open an ec2 resource and ec2 client for this specific profile and region within it
+            this_ec2_resource = this_session.resource('ec2',region_name=this_region)
+            this_ec2_client = this_session.client('ec2',region_name=this_region)
+
+            # loop over the volume_dict and only snapshot ones in this account and region
+            # remember volume_dict looks like this
+            # volume_id : ['account_id', 'region', 'notes'] 
+
+            for this_volumes_id,this_volumes_account,this_volumes_region,this_volumes_notes in volume_dict.items():
+                # first off, only bother with volumes tied to the account we're in
+                if this_volumes_account == this_account:
+                    # now, only bother if the volume is in the region we're in
+                    if this_volumes_region == this_region:
+                        
 
     # ## loop through each volume and retrieve its snapshots
     # for line in Lines:
@@ -189,8 +216,7 @@ def main():
 
     # volume_id_list = []
     # snapshot_id_list = []
-    # ec2client = session.client('ec2',region_name=region)
-    # ec2resource = session.resource('ec2',region_name=region)
+
     # count = 0
     # for vol in volume_id_list:
     #     count += 1
