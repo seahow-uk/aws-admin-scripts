@@ -14,6 +14,7 @@ arguments:
 
         vol-id: the id of the AWS EBS volume you would like to snapshot
         account-id: the AWS account id that the aforementioned volume lives in
+        region: the AWS region name that the volume lives in
         notes: anything you'd like to add as a note which will be appended as a tag to the snapshot
 
         Be sure to quote the notes field unless its a very simple string
@@ -135,7 +136,7 @@ def main():
 
     # get the unique account ids from the local profiles, i.e. what they actually have access to
     for this_profile in profile_list:
-        print("profile:" + this_profile)
+
         # Open a session and get the info for list particular profile
         # UNLESS they didn't specify a profile at all in which case just use env vars or whatever they're doing
         if this_profile == "noprofile":
@@ -161,6 +162,8 @@ def main():
             sys.exit()
 
     print(profile_dict)
+
+
 
     # ## loop through each volume and retrieve its snapshots
     # for line in Lines:
