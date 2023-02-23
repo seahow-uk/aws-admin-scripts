@@ -44,7 +44,7 @@ Procedure:
     3.  python3 ./sso-auth.py -d <role you want to default to> -r <your SSO region> -o True
     
         a.  defaultrole: This is here because you might have several roles and we need to know which one
-            to use to make temp creds fore in the AWS CLI config
+            to use to make temp creds for in the AWS CLI config
 
         b.  region: You need to specify the region your SSO service is set up in
 
