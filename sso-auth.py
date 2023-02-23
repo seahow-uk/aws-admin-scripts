@@ -35,8 +35,7 @@ Procedure:
 
     1.  aws configure sso-session
 
-        a.  NOT "aws configure sso"
-        b.  walk through the dialog
+        a.  walk through the dialog
 
     2.  aws sso login
 
