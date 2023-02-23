@@ -51,6 +51,11 @@ def setup_args():
                         required=False,
                         action='store',
                         help='If you want to use a non-default profile')
+    
+    parser.add_argument('-a', '--allprofilesallregions',
+                        required=False,
+                        action='store',
+                        help='If you want to loop over all local profiles and pull from all regions')
 
     return (parser.parse_args())
 
