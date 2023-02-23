@@ -34,18 +34,9 @@ example 1 (single region):
     python ebs-discover-stale-volumes.py -r eu-central-1 >> mycsv.csv
         Returns list from Frankfurt with no header (you don't want a header here because its appending to an existing CSV)
 
-example 2 (multiple regions into one CSV):
+example 2 (all profiles all regions)
 
-    python ebs-discover-stale-volumes.py -r eu-west-1 -f True > mycsv.csv
-    python ebs-discover-stale-volumes.py -r eu-west-2 >> mycsv.csv
-    python ebs-discover-stale-volumes.py -r eu-west-3 >> mycsv.csv
-    python ebs-discover-stale-volumes.py -r eu-north-1 >> mycsv.csv
-
-        The example above puts the data for several European regions into one CSV
-
-example 3 (all profiles all regions)
-
-    python ebs-discover-stale-volumes.py -a True
+    python ebs-discover-stale-volumes.py -a True > mycsv.csv
 
         The example above loops over all local AWS CLI profiles configured on this box AND pulls data from all regions
         Note: This can take a long time to run if you have more than a couple profiles
