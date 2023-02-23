@@ -42,16 +42,15 @@ Procedure:
 
         a.  walk through the dialog and choose the MPA
 
-    3.  python3 ./sso-auth.py -d <role you want to default to> -r <your SSO region>
+    3.  python3 ./sso-auth.py -d <role you want to default to> -r <your SSO region> -o True
     
         a.  defaultrole: This is here because you might have several roles and we need to know which one
             to use to make temp creds fore in the AWS CLI config
 
         b.  region: You need to specify the region your SSO service is set up in
 
-**NOTE** 
-
-    This script will delete your current local AWS CLI profile/credential configuration!!
+        c.  overwrite: if you add the -o True option, the script will OVERWRITE your ~/.aws/config and credentials files
+            if you do not include it, the credentials and config files will appear in the local directory
 
 """
 
@@ -74,6 +73,11 @@ def setup_args():
                         required=True,
                         action='store',
                         help='Name of the Region')
+
+    parser.add_argument('-o', '--overwrite',
+                        required=False,
+                        action='store',
+                        help='True/False')
 
     return (parser.parse_args()) 
 
@@ -102,6 +106,15 @@ def main():
 
   defaultRole = args.defaultrole
   defaultRegion = args.region
+  
+  if (args.overwrite):
+    if args.overwrite == "True" or args.overwrite == "true":
+      defaultPath = os.path.expanduser('~/.aws')
+    else:
+      defaultPath = ""
+  
+  credentialsFile = os.path.join(defaultPath, 'credentials')
+  configFile = os.path.join(defaultPath, 'config')
 
   accessToken = getAccessToken() 
 
@@ -113,10 +126,10 @@ def main():
 
   accounts = sso.list_accounts(maxResults=1000,accessToken=accessToken)['accountList']
   
-  with open('config', 'w', encoding='utf-8') as f:
+  with open(credentialsFile, 'w', encoding='utf-8') as f:
     f.write("")
 
-  with open('credentials', 'w', encoding='utf-8') as f:
+  with open(configFile, 'w', encoding='utf-8') as f:
     f.write("")
     
 
