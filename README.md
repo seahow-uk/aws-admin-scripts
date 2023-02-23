@@ -197,7 +197,7 @@ given a list of volume-ids in a file (one per line, no other characters), this w
         
         You do not need to specify the region with -r or a profile with -p if you use this option
 
-![image](https://user-images.githubusercontent.com/112027478/207862481-bde0fd32-0919-4416-8587-2987bc06bb96.png)
+![image](https://user-images.githubusercontent.com/112027478/221023030-4659a9ba-5a15-4621-8f7a-aca8414f9d76.png)
 
 **To produce the above example:**
 
