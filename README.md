@@ -203,3 +203,44 @@ Courtesy of this article: https://anfcommunity.com/2020/11/20/how-to-nfs-perform
   This takes an hour to run. The part that says "for i in 1 2 3 4 ..." those numbers are talking about the IO depth. 
   You could reduce the runtime of this to 30 min or so by capping it at 10, or 15 min by capping it at 5, but you get
   less information about how more heavy-hitting workloads will behave
+
+## **sso-auth.py**
+[**[Back to Top]**](#aws-admin-scripts)
+
+This script will use your AWS IAM Identity Center (Successor to AWS Single Sign-On) account to generate temporary
+credentials within your local AWS CLI client as well as set up matching profiles. 
+
+This is useful when you need to run other scripts in this repo across dozens of accounts in an Organization as:
+    
+    1.  it saves you the manual effort of creating all the profiles
+    2.  it improves security by not saving permanent credentials to local files
+
+Prerequisites: 
+
+    1.  awscliv2 
+            NOTE: awscli v1 will not work as it cannot do "aws configure sso-session"      
+    2.  boto3
+
+Required Parameters:
+
+    -r or --region [String]
+        AWS region to use
+    
+    -d or --defaultrole [String]
+        SSO default role to use
+
+Optional Parameters:
+
+    -o or --overwrite [True/False]
+        script will OVERWRITE your _~/.aws/config_ and _~/.aws/credentials_ files
+        
+        if you do not use this option, the _config_ and _credentials_ files will appear in the local directory
+
+Procedure to use:
+
+    1.  aws configure sso-session
+        (walk through the dialog)
+    2.  aws sso login --your_sso_session_name
+        (walk through the dialog and choose the MPA of your Org)
+
+![image](https://user-images.githubusercontent.com/112027478/220894542-900125e1-1fa5-49ea-8685-0c7a870b1274.png)
