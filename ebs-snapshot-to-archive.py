@@ -35,8 +35,9 @@ arguments:
 
 prerequisites:
 
-    pip install boto3
-    pip install argparse
+    pip3 install boto3
+    pip3 install argparse
+    pip3 install csv
 
 examples:
 
@@ -53,8 +54,7 @@ examples:
 import boto3
 import argparse
 import sys
-
-
+import csv
 
 def setup_args():
     parser = argparse.ArgumentParser(
@@ -182,27 +182,6 @@ def main():
 
     # print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
     # print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
-
-def splitLines(data):
-   newLines = []
-   for line in data:
-       myList = line.split(",")
-       newLines.append(myList)
-   return(newLines)
-
-def removeBlankLines(data):
-   goodLines = []
-   for thisLine in data:
-       thisLine = thisLine.rstrip()
-       if len(thisLine) != 0:
-           goodLines.append(thisLine)
-   return(goodLines)
-
-def readData(fileName):
-   f = open(fileName, "r")
-   data = f.readlines()
-   f.close()
-   return data
 
 if __name__ == "__main__":
     exit(main())                        
