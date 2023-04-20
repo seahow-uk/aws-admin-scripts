@@ -1,9 +1,6 @@
 #!/usr/bin/python3
 
 """
-https://github.com/seahow-uk/aws-admin-scripts
-Aug 2022
-
 arguments:
 
     -r or --region [String]

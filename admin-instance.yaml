@@ -1,6 +1,3 @@
-# seahow@ - Dec 2022
-#
-
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Amazon Linux 2 w/CloudWatch, IAM, SSM, Python"
 

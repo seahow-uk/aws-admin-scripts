@@ -1,10 +1,6 @@
 #!/usr/bin/python3
 
 """
-https://github.com/seahow-uk/aws-admin-scripts
-by: Ash Stirling 
-Feb 2023
-
 Purpose: This script will use your AWS SSO credentials to generate temporary local credentials
 and AWS CLI profiles per-account for all the AWS accounts your SSO session has access to.
 

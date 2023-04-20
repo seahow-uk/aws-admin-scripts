@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 
 """
-https://github.com/seahow-uk/aws-admin-scripts
-Nov 2022
 
 arguments:
 

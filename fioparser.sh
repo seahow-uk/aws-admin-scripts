@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# https://github.com/seahow-uk/aws-admin-scripts
-# Fed 2023
-#
 # This is a wrapper script which will run fioparser 4 times with different IO patterns.
 # Courtesy of this article: https://anfcommunity.com/2020/11/20/how-to-nfs-performance-assessment-using-fio-and-fio-parser/
 
