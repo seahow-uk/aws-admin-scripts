@@ -235,11 +235,14 @@ def main():
 
                         snapshot_name = ("archive of " + this_volume_name + " created " + utc_date_time)
 
-                        this_volume_type = str(this_volumes_data.volume_type)
-                        this_volume_az = str(this_volumes_data.availability_zone)
-                        this_volume_size = str(this_volumes_data.size)
-                        this_volume_encrypted = str(this_volumes_data.encrypted)
-                        this_volume_created = str(this_volumes_data.create_time.strftime(date_format_str))
+                        try:
+                            this_volume_type = str(this_volumes_data.volume_type)
+                            this_volume_az = str(this_volumes_data.availability_zone)
+                            this_volume_size = str(this_volumes_data.size)
+                            this_volume_encrypted = str(this_volumes_data.encrypted)
+                            this_volume_created = str(this_volumes_data.create_time.strftime(date_format_str))
+                        except:
+                            error_list.append("ERROR: Something is wrong with " + this_volumes_id + " it might be a nonexistent vol-id?")
 
                         try:
                             this_snapshot = this_ec2_resource.create_snapshot(
