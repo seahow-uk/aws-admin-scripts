@@ -132,6 +132,9 @@ def main():
     csv_region_list = []
     snapshot_dict = {}
     archived_dict = {}
+    skipped_count = 0
+    archive_skipped_count = 0
+    archive_count = 0
 
     # set up constants
     utc_date_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
@@ -291,6 +294,10 @@ def main():
 
                         except:
                             error_list.append("SKIPPED: " + this_volumes_id + " had errors so we skipped this one entirely.  The vol-id is probably bad.")
+                            skipped_count=skipped_count+1
+
+                        else:
+                            archive_count=archive_count+1
 
             # loop over snapshots in this account and region to try and tier them down to archive
             for this_snapshots_id,this_snapshots_list in snapshot_dict.items():
@@ -309,15 +316,28 @@ def main():
                     archived_dict[this_snapshots_id] = [this_snapshots_id,this_snapshots_volume_id,this_snapshots_account,this_snapshots_region,this_snapshots_notes]
                 except:
                     error_list.append("ERROR: Archival of snapshot " + this_snapshots_id + " failed")
+                    archive_skipped_count=archive_skipped_count+1
 
     print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
     print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
-
     print (" ")
-    print ("ERRORS / SKIPPED VOLUMES:")
-    print ("------------------------")
-    for thiserror in error_list:
-        print (thiserror)
+    print ("Number of volumes snapped and moved to archive successfully: " + archive_count)
+    print (" ")
+
+    if skipped_count == 0:
+        print ("**No errors during the snapshot phase**")
+    else:
+        print ("Number of volumes skipped due to errors during the snapshot " + skipped_count)
+
+    if archive_skipped_count ==0:
+        print ("**No errors during the archive phase**")
+    else:
+        print ("Number of tiering operations skipped due to errors while archiving " + archive_skipped_count)
+
+    if len(error_list) > 0:
+        print ("Error Details:")
+        for thiserror in error_list:
+            print (thiserror)
 
     # write the output to a file for troubleshooting
 
