@@ -293,7 +293,7 @@ def main():
                 this_snapshots_volume_id = this_snapshots_list[0]
                 this_snapshots_account = this_snapshots_list[1]
                 this_snapshots_region = this_snapshots_list[2]
-                this_snapshots_notes = this_snapshots_list[2]
+                this_snapshots_notes = this_snapshots_list[3]
                 
                 try:
                     this_ec2_client.modify_snapshot_tier(
