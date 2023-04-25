@@ -122,7 +122,7 @@ def main():
         profile_list = profile.split()
    
     file = open(filename, "r")
-    csvReader = csv.reader( file,  delimiter=",", quotechar='"')
+    csvReader = csv.reader( file,  delimiter=",", quotechar="'")
 
     # set up empty data structures to track stuff
     profile_dict = {}
