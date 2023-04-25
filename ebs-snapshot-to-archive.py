@@ -221,14 +221,13 @@ def main():
                         
                         this_volumes_data = this_ec2_resource.Volume(this_volumes_id)
 
-                        if this_volumes_data.tags:
-                            for t in this_volumes_data.tags:
-                                if t["Key"] == 'Name':
-                                    this_volume_name = t["Value"]  
-
-                        # get more info about the volume to add to tags in the snapshot
-                        # the idea here is you would delete the volume so this is needed
-                        # if you ever end up wondering what an archive snapshot is
+                        try:
+                            if this_volumes_data.tags:
+                                for t in this_volumes_data.tags:
+                                    if t["Key"] == 'Name':
+                                        this_volume_name = t["Value"]  
+                        except:
+                            error_list.append("ERROR: Looking for tages on " + this_volumes_id + " failed")
 
                         snapshot_name = ("archive of " + this_volume_name + " created " + utc_date_time)
 
