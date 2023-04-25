@@ -202,6 +202,8 @@ def main():
             print("volume_dict:")
             print(volume_dict.items())
             for this_volumes_id,this_volumes_list in volume_dict.items():
+                
+                this_volumes_id = str(this_volumes_id)
 
                 this_volumes_account = this_volumes_list[0]
                 this_volumes_region = this_volumes_list[1]
@@ -222,8 +224,6 @@ def main():
                         print("this_volumes_id: " + this_volumes_id)
 
                         this_volumes_data = this_ec2_resource.Volume(this_volumes_id)
-
-                        
 
                         try:
                             if this_volumes_data.tags:
