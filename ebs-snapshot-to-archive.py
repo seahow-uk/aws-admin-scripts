@@ -220,14 +220,14 @@ def main():
                         try:
                             this_volumes_data = this_ec2_resource.Volume(this_volumes_id)
                         except:
-                            error_list.append("ERROR: Something is wrong with " + this_volumes_id + " it might be a nonexistent vol-id?")
+                            error_list.append("ERROR: Something is wrong with " + this_volumes_id + " it failed here: this_volumes_data = this_ec2_resource.Volume(this_volumes_id)")
                         try:
                             if this_volumes_data.tags:
                                 for t in this_volumes_data.tags:
                                     if t["Key"] == 'Name':
                                         this_volume_name = t["Value"]  
                         except:
-                            error_list.append("ERROR: Something is wrong with " + this_volumes_id + " it might be a nonexistent vol-id?")
+                            error_list.append("ERROR: Something is wrong with " + this_volumes_id + " it failed when looking for its name in the tags")
 
                         try:
                             this_volume_type = str(this_volumes_data.volume_type)
@@ -236,7 +236,7 @@ def main():
                             this_volume_encrypted = str(this_volumes_data.encrypted)
                             this_volume_created = str(this_volumes_data.create_time.strftime(date_format_str))
                         except:
-                            error_list.append("ERROR: Something is wrong with " + this_volumes_id + " it might be a nonexistent vol-id?")
+                            error_list.append("ERROR: Something is wrong with " + this_volumes_id + " it failed when trying to obtain attributes like volume_type")
 
 
                         snapshot_name = ("archive of " + this_volume_name + " created " + utc_date_time)
@@ -314,7 +314,11 @@ def main():
     print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
 
     print (" ")
-    print (error_list)
+    print ("ERRORS / SKIPPED VOLUMES:")
+    print ("------------------------")
+    for thiserror in error_list:
+        print (thiserror)
+
     # write the output to a file for troubleshooting
 
     archive_file = 'archived_snapshots_output.csv'
