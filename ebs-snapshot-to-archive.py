@@ -199,8 +199,8 @@ def main():
             # loop over the volume_dict and only snapshot ones in this account and region
             # remember volume_dict looks like this
             # volume_id : ['account_id', 'region', 'notes'] 
-            print("volume_dict:")
-            print(volume_dict.items())
+            # print("volume_dict:")
+            # print(volume_dict.items())
             for this_volumes_id,this_volumes_list in volume_dict.items():
                 
                 this_volumes_id = str(this_volumes_id)
@@ -214,26 +214,21 @@ def main():
                     # now, only bother if the volume is in the region we're in
                     if this_volumes_region == this_region:
                         print("creating snapshot for: ",this_volumes_id,this_volumes_account,this_volumes_region,this_volumes_notes + "...(waiting)...")
-                        
 
                         # by default we'll assume a volume has no name
                         this_volume_name = "unnamed"
 
-                        # try to get the volume name here
-                        
-                        print("this_volumes_id: " + this_volumes_id)
-
-                        this_volumes_data = this_ec2_resource.Volume(this_volumes_id)
-
+                        try:
+                            this_volumes_data = this_ec2_resource.Volume(this_volumes_id)
+                        except:
+                            error_list.append("ERROR: Something is wrong with " + this_volumes_id + " it might be a nonexistent vol-id?")
                         try:
                             if this_volumes_data.tags:
                                 for t in this_volumes_data.tags:
                                     if t["Key"] == 'Name':
                                         this_volume_name = t["Value"]  
                         except:
-                            error_list.append("ERROR: Looking for tags on " + this_volumes_id + " failed")
-
-                        snapshot_name = ("archive of " + this_volume_name + " created " + utc_date_time)
+                            error_list.append("ERROR: Something is wrong with " + this_volumes_id + " it might be a nonexistent vol-id?")
 
                         try:
                             this_volume_type = str(this_volumes_data.volume_type)
@@ -243,6 +238,9 @@ def main():
                             this_volume_created = str(this_volumes_data.create_time.strftime(date_format_str))
                         except:
                             error_list.append("ERROR: Something is wrong with " + this_volumes_id + " it might be a nonexistent vol-id?")
+
+
+                        snapshot_name = ("archive of " + this_volume_name + " created " + utc_date_time)
 
                         try:
                             this_snapshot = this_ec2_resource.create_snapshot(
@@ -291,12 +289,12 @@ def main():
                             print ("snapshot " + this_snapshot.snapshot_id + " complete.")
                             # this is where we will store information about snapshots that were successful
                             snapshot_dict[this_snapshot.snapshot_id] = [this_volumes_id, this_volumes_account, this_volumes_region, this_volumes_notes]
-                            print ("inserting [" + this_volumes_id, this_volumes_account, this_volumes_region, this_volumes_notes + "] into " + snapshot_dict[this_snapshot.snapshot_id])
+                            # print ("inserting [" + this_volumes_id, this_volumes_account, this_volumes_region, this_volumes_notes + "] into " + snapshot_dict[this_snapshot.snapshot_id])
                         except:
                             error_list.append("ERROR: Initial snapshot of volume " + this_volumes_id + " failed")
             
-            print("snapshot_dict:")
-            print(snapshot_dict.items())
+            # print("snapshot_dict:")
+            # print(snapshot_dict.items())
 
             # loop over snapshots in this account and region to try and tier them down to archive
             for this_snapshots_id,this_snapshots_list in snapshot_dict.items():
@@ -316,12 +314,14 @@ def main():
                 except:
                     error_list.append("ERROR: Archival of snapshot " + this_snapshots_id + " failed")
 
-            print("archived_dict:")
-            print(archived_dict.items())
+            # print("archived_dict:")
+            # print(archived_dict.items())
 
     print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
     print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
 
+    print (".")
+    print (error_list.items())
     # write the output to a file for troubleshooting
 
     archive_file = 'archived_snapshots_output.csv'
