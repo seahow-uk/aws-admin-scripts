@@ -321,7 +321,7 @@ def main():
     print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
 
     print (".")
-    print (error_list.items())
+    print (error_list)
     # write the output to a file for troubleshooting
 
     archive_file = 'archived_snapshots_output.csv'
