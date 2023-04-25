@@ -319,11 +319,9 @@ def main():
                 except:
                     error_list.append("SKIPPED: Archival of snapshot " + this_snapshots_id + " failed. You will need to manually tier this one down")
                     archive_skipped_count=archive_skipped_count+1
-
+    print (" ")
     print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
     print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
-    print (" ")
-    print ("Number of volumes snapped and moved to archive successfully: " + str(archive_count))
     print (" ")
 
     if skipped_count == 0:
@@ -340,6 +338,9 @@ def main():
         print ("Error Details:")
         for thiserror in error_list:
             print (thiserror)
+
+    print (" ")
+    print ("Number of volumes snapped and moved to archive successfully: " + str(archive_count))
 
     # write the output to a file for troubleshooting
 
