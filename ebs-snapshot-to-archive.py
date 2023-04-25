@@ -290,7 +290,7 @@ def main():
                             snapshot_dict[this_snapshot.snapshot_id] = [this_volumes_id, this_volumes_account, this_volumes_region, this_volumes_notes]
 
                         except:
-                            error_list.append("ERROR: Initial snapshot of volume " + this_volumes_id + " failed")
+                            error_list.append("SKIPPED: " + this_volumes_id + " had errors so we skipped this one entirely")
 
             # loop over snapshots in this account and region to try and tier them down to archive
             for this_snapshots_id,this_snapshots_list in snapshot_dict.items():
