@@ -321,18 +321,18 @@ def main():
     print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
     print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
     print (" ")
-    print ("Number of volumes snapped and moved to archive successfully: " + archive_count)
+    print ("Number of volumes snapped and moved to archive successfully: " + str(archive_count))
     print (" ")
 
     if skipped_count == 0:
         print ("**No errors during the snapshot phase**")
     else:
-        print ("Number of volumes skipped due to errors during the snapshot " + skipped_count)
+        print ("Number of volumes skipped due to errors during the snapshot " + str(skipped_count))
 
-    if archive_skipped_count ==0:
+    if archive_skipped_count == 0:
         print ("**No errors during the archive phase**")
     else:
-        print ("Number of tiering operations skipped due to errors while archiving " + archive_skipped_count)
+        print ("Number of tiering operations skipped due to errors while archiving " + str(archive_skipped_count))
 
     if len(error_list) > 0:
         print ("Error Details:")
