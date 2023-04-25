@@ -199,8 +199,7 @@ def main():
             # loop over the volume_dict and only snapshot ones in this account and region
             # remember volume_dict looks like this
             # volume_id : ['account_id', 'region', 'notes'] 
-            # print("volume_dict:")
-            # print(volume_dict.items())
+
             for this_volumes_id,this_volumes_list in volume_dict.items():
                 
                 this_volumes_id = str(this_volumes_id)
@@ -289,16 +288,13 @@ def main():
                             print ("snapshot " + this_snapshot.snapshot_id + " complete.")
                             # this is where we will store information about snapshots that were successful
                             snapshot_dict[this_snapshot.snapshot_id] = [this_volumes_id, this_volumes_account, this_volumes_region, this_volumes_notes]
-                            # print ("inserting [" + this_volumes_id, this_volumes_account, this_volumes_region, this_volumes_notes + "] into " + snapshot_dict[this_snapshot.snapshot_id])
+
                         except:
                             error_list.append("ERROR: Initial snapshot of volume " + this_volumes_id + " failed")
-            
-            # print("snapshot_dict:")
-            # print(snapshot_dict.items())
 
             # loop over snapshots in this account and region to try and tier them down to archive
             for this_snapshots_id,this_snapshots_list in snapshot_dict.items():
-                print("!")
+
                 this_snapshots_volume_id = this_snapshots_list[0]
                 this_snapshots_account = this_snapshots_list[1]
                 this_snapshots_region = this_snapshots_list[2]
@@ -314,13 +310,10 @@ def main():
                 except:
                     error_list.append("ERROR: Archival of snapshot " + this_snapshots_id + " failed")
 
-            # print("archived_dict:")
-            # print(archived_dict.items())
-
     print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
     print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
 
-    print (".")
+    print (" ")
     print (error_list)
     # write the output to a file for troubleshooting
 
