@@ -221,13 +221,15 @@ def main():
                         
                         this_volumes_data = this_ec2_resource.Volume(this_volumes_id)
 
+                        print("this_volumes_data: " + this_volumes_data)
+
                         try:
                             if this_volumes_data.tags:
                                 for t in this_volumes_data.tags:
                                     if t["Key"] == 'Name':
                                         this_volume_name = t["Value"]  
                         except:
-                            error_list.append("ERROR: Looking for tages on " + this_volumes_id + " failed")
+                            error_list.append("ERROR: Looking for tags on " + this_volumes_id + " failed")
 
                         snapshot_name = ("archive of " + this_volume_name + " created " + utc_date_time)
 
