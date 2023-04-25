@@ -142,21 +142,23 @@ def main():
 
     # get info out of the CSV
     for row in csvReader:
+        try:
+            if (row[1] not in csv_account_id_list):
+                csv_account_id_list.append(row[1])
+       
+            if (row[0] not in volume_dict):
+                
+                new_volume = row[0]
+                new_account = row[1]
+                new_region = row[2]
+                new_notes = row[3]
 
-        if (row[1] not in csv_account_id_list):
-            csv_account_id_list.append(row[1])
-        
-        if (row[0] not in volume_dict):
+                volume_dict[new_volume] = [new_account, new_region, new_notes]
             
-            new_volume = row[0]
-            new_account = row[1]
-            new_region = row[2]
-            new_notes = row[3]
-
-            volume_dict[new_volume] = [new_account, new_region, new_notes]
-        
-        if (row[2] not in csv_region_list):
-            csv_region_list.append(row[2])
+            if (row[2] not in csv_region_list):
+                csv_region_list.append(row[2])
+        except:
+            print("oops. I found a blank line in your volume file.")
 
     # in the special case that they are specifying one region we will just create a single region list here    
     if allprofilesallregions == "False":
