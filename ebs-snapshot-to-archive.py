@@ -219,9 +219,11 @@ def main():
 
                         # try to get the volume name here
                         
+                        print("this_volumes_id: " + this_volumes_id)
+
                         this_volumes_data = this_ec2_resource.Volume(this_volumes_id)
 
-                        print("this_volumes_data: " + this_volumes_data)
+                        
 
                         try:
                             if this_volumes_data.tags:
