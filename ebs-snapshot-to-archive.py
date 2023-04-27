@@ -67,6 +67,8 @@ import sys
 import csv
 from datetime import datetime
 
+print(boto3.__version__)
+
 def setup_args():
     parser = argparse.ArgumentParser(
         description='Optional arguments')
