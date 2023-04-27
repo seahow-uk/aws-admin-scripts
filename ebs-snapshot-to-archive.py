@@ -316,7 +316,8 @@ def main():
                     )
                     print ("initiating archive of: ",this_snapshots_id,this_snapshots_volume_id,this_snapshots_account,this_snapshots_region,this_snapshots_notes)
                     archived_dict[this_snapshots_id] = [this_snapshots_id,this_snapshots_volume_id,this_snapshots_account,this_snapshots_region,this_snapshots_notes]
-                except:
+                except Exception as exc:
+                    print(exc)
                     error_list.append("SKIPPED: Archival of snapshot " + this_snapshots_id + " failed. You will need to manually tier this one down")
                     archive_skipped_count=archive_skipped_count+1
                 else:
