@@ -201,6 +201,8 @@ def main():
             this_ec2_resource = this_session.resource('ec2',region_name=this_region)
             this_ec2_client = this_session.client('ec2',region_name=this_region)
 
+            print(this_ec2_client)
+
             # loop over the volume_dict and only snapshot ones in this account and region
             # remember volume_dict looks like this
             # volume_id : ['account_id', 'region', 'notes'] 
