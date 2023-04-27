@@ -293,16 +293,15 @@ def main():
                             print ("snapshot " + this_snapshot.snapshot_id + " complete.")
                             # this is where we will store information about snapshots that were successful
                             snapshot_dict[this_snapshot.snapshot_id] = [this_volumes_id, this_volumes_account, this_volumes_region, this_volumes_notes]
-
                         except:
                             error_list.append("SKIPPED: " + this_volumes_id + " had errors so we skipped this one entirely.  The vol-id is probably bad.")
                             skipped_count=skipped_count+1
 
-                        else:
-                            archive_count=archive_count+1
 
             # loop over snapshots in this account and region to try and tier them down to archive
             for this_snapshots_id,this_snapshots_list in snapshot_dict.items():
+                
+                print("trying to archive: ",snapshot_dict.items())
 
                 this_snapshots_volume_id = this_snapshots_list[0]
                 this_snapshots_account = this_snapshots_list[1]
@@ -319,6 +318,8 @@ def main():
                 except:
                     error_list.append("SKIPPED: Archival of snapshot " + this_snapshots_id + " failed. You will need to manually tier this one down")
                     archive_skipped_count=archive_skipped_count+1
+                else:
+                    archive_count=archive_count+1
     print (" ")
     print ("Note: the snapshots are still being tiered down to archive.  How long this takes can vary a lot.")
     print ("Double check the tiering status in the console under EC2 > Snapshots > [snapshot] > Storage Tier tab")
