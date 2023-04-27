@@ -97,7 +97,8 @@ def main():
 
     if boto3.__version__[:3] == "1.1":
         print("Your version of boto3 is too low")
-
+        exit()
+        
     args = setup_args()
 
     if args.region:
