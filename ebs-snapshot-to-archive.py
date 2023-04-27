@@ -50,6 +50,15 @@ examples:
 
         python3 ebs-snapshot-to-archive.py -a True -f ./myebsvolumes.csv
 
+troubleshooting:
+
+    If the archiving stage isn't working, it could be because you have an older version of boto3.
+    To determine this, do the following:
+
+    pip3 show boto3
+
+    If the version isn't 1.20 or above, you will need to upgrade boto3 to enable the 'modify_snapshot_tier' function of the ec2 client connection
+
 """
 
 import boto3
@@ -201,8 +210,6 @@ def main():
             this_ec2_resource = this_session.resource('ec2',region_name=this_region)
             this_ec2_client = this_session.client('ec2',region_name=this_region)
 
-            print(dir(this_ec2_client))
-
             # loop over the volume_dict and only snapshot ones in this account and region
             # remember volume_dict looks like this
             # volume_id : ['account_id', 'region', 'notes'] 
@@ -303,7 +310,7 @@ def main():
             # loop over snapshots in this account and region to try and tier them down to archive
             for this_snapshots_id,this_snapshots_list in snapshot_dict.items():
                 
-                print("trying to archive: ",snapshot_dict.items())
+                #print("trying to archive: ",snapshot_dict.items())
 
                 this_snapshots_id_str = str(this_snapshots_id)
                 this_snapshots_volume_id = str(this_snapshots_list[0])                  
