@@ -95,7 +95,8 @@ def setup_args():
 
 def main():
 
-    print(type(boto3.__version__))
+    if boto3.__version__[:3] == "1.1":
+        print("Your version of boto3 is too low")
 
     args = setup_args()
 
