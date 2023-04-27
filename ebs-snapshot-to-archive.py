@@ -303,14 +303,15 @@ def main():
                 
                 print("trying to archive: ",snapshot_dict.items())
 
-                this_snapshots_volume_id = str(this_snapshots_list[0])
+                this_snapshots_id_str = str(this_snapshots_id)
+                this_snapshots_volume_id = str(this_snapshots_list[0])                  
                 this_snapshots_account = str(this_snapshots_list[1])
                 this_snapshots_region = str(this_snapshots_list[2])
                 this_snapshots_notes = str(this_snapshots_list[3])
                 
                 try:
                     this_ec2_client.modify_snapshot_tier(
-                        SnapshotId=this_snapshots_id,
+                        SnapshotId=this_snapshots_id_str,
                         StorageTier='archive'
                     )
                     print ("initiating archive of: ",this_snapshots_id,this_snapshots_volume_id,this_snapshots_account,this_snapshots_region,this_snapshots_notes)
